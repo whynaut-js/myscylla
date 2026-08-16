@@ -1,0 +1,311 @@
+[2026-08-05 03:21:36,423] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:21:36,423] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:21:36,424] INFO: logging in using static token
+[2026-08-05 03:21:37,474] INFO: Loaded cogs.latency
+[2026-08-05 03:21:37,479] INFO: Loaded cogs.owner
+[2026-08-05 03:21:38,652] INFO: Shard ID None has connected to Gateway (Session ID: bb9b0f6a6f1af2ecc1ccd7344193fc63).
+[2026-08-05 03:21:40,657] INFO: running as Meliolin#2512
+[2026-08-05 03:21:47,400] ERROR: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "clearlogs" is not found
+[2026-08-05 03:25:28,184] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:25:28,185] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:25:28,186] INFO: logging in using static token
+[2026-08-05 03:25:29,099] INFO: Loaded cogs.latency
+[2026-08-05 03:25:29,106] INFO: Loaded cogs.owner
+[2026-08-05 03:25:30,115] INFO: Shard ID None has connected to Gateway (Session ID: 0dc6a00717816f083298ffdbe0cdd848).
+[2026-08-05 03:25:32,121] INFO: running as Meliolin#2512
+[2026-08-05 03:25:43,236] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:25:43,236] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:25:43,237] INFO: logging in using static token
+[2026-08-05 03:25:44,152] INFO: Loaded cogs.latency
+[2026-08-05 03:25:44,158] INFO: Loaded cogs.owner
+[2026-08-05 03:25:45,273] INFO: Shard ID None has connected to Gateway (Session ID: 65e5115ed439201a9e6ab0e865814c65).
+[2026-08-05 03:25:47,278] INFO: running as Meliolin#2512
+[2026-08-05 03:33:06,297] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:33:06,297] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:33:06,298] INFO: logging in using static token
+[2026-08-05 03:33:07,342] INFO: Loaded cogs.latency
+[2026-08-05 03:33:07,348] INFO: Loaded cogs.owner
+[2026-08-05 03:33:08,566] INFO: Shard ID None has connected to Gateway (Session ID: b201ab92c9fe1adbe18bb87b54abbd96).
+[2026-08-05 03:33:10,570] INFO: running as Meliolin#2512
+[2026-08-05 03:34:00,210] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:34:00,211] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:34:00,211] INFO: logging in using static token
+[2026-08-05 03:34:01,206] INFO: Loaded cogs.latency
+[2026-08-05 03:34:01,211] INFO: Loaded cogs.owner
+[2026-08-05 03:34:02,224] INFO: Shard ID None has connected to Gateway (Session ID: 31651cd7c82df17636665b98fa10a911).
+[2026-08-05 03:34:04,228] INFO: running as Meliolin#2512
+[2026-08-05 03:41:31,841] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:41:31,842] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:41:31,843] INFO: logging in using static token
+[2026-08-05 03:41:32,699] INFO: Loaded cogs.latency
+[2026-08-05 03:41:32,705] INFO: Loaded cogs.owner
+[2026-08-05 03:41:33,664] INFO: Shard ID None has connected to Gateway (Session ID: fbbbee875424f55363d8447425475942).
+[2026-08-05 03:41:35,701] INFO: running as Meliolin#2512
+[2026-08-05 03:41:42,110] ERROR: Unhandled error in command 'help': Command raised an exception: TypeError: MyHelpCommand.filter_commands() got an unexpected keyword argument 'key'
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 266, in wrapped
+    ret = await coro(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/help.py", line 980, in command_callback
+    return await self.send_bot_help(mapping)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/help.py", line 1550, in send_bot_help
+    filtered = await self.filter_commands(bot.commands, sort=True, key=get_category)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MyHelpCommand.filter_commands() got an unexpected keyword argument 'key'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1376, in invoke
+    await ctx.command.invoke(ctx)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 1064, in invoke
+    await injected(*ctx.args, **ctx.kwargs)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 275, in wrapped
+    raise CommandInvokeError(exc) from exc
+discord.ext.commands.errors.CommandInvokeError: Command raised an exception: TypeError: MyHelpCommand.filter_commands() got an unexpected keyword argument 'key'
+[2026-08-05 03:41:47,229] ERROR: Unhandled error in command 'help': Command raised an exception: TypeError: MyHelpCommand.filter_commands() got an unexpected keyword argument 'key'
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 266, in wrapped
+    ret = await coro(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/help.py", line 980, in command_callback
+    return await self.send_bot_help(mapping)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/help.py", line 1550, in send_bot_help
+    filtered = await self.filter_commands(bot.commands, sort=True, key=get_category)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MyHelpCommand.filter_commands() got an unexpected keyword argument 'key'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1376, in invoke
+    await ctx.command.invoke(ctx)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 1064, in invoke
+    await injected(*ctx.args, **ctx.kwargs)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 275, in wrapped
+    raise CommandInvokeError(exc) from exc
+discord.ext.commands.errors.CommandInvokeError: Command raised an exception: TypeError: MyHelpCommand.filter_commands() got an unexpected keyword argument 'key'
+[2026-08-05 03:45:37,612] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:45:37,612] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:45:37,613] INFO: logging in using static token
+[2026-08-05 03:45:39,376] INFO: Loaded cogs.latency
+[2026-08-05 03:45:39,381] INFO: Loaded cogs.owner
+[2026-08-05 03:45:40,422] INFO: Shard ID None has connected to Gateway (Session ID: 406fcb0379ce8439fb3169d5230cd6fa).
+[2026-08-05 03:45:42,440] INFO: running as Meliolin#2512
+[2026-08-05 03:46:51,721] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:46:51,721] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:46:54,031] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 03:46:54,031] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 03:46:54,032] INFO: logging in using static token
+[2026-08-05 03:46:55,662] INFO: Loaded cogs.latency
+[2026-08-05 03:46:55,665] INFO: Loaded cogs.owner
+[2026-08-05 03:46:57,119] INFO: Shard ID None has connected to Gateway (Session ID: a2b8ddc017dda39d854e1c82300ff097).
+[2026-08-05 03:46:59,123] INFO: running as Meliolin#2512
+[2026-08-05 04:00:11,001] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:00:11,001] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:00:13,516] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:00:13,516] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:00:13,518] INFO: logging in using static token
+[2026-08-05 04:00:14,569] INFO: Loaded cogs.latency
+[2026-08-05 04:00:14,573] INFO: Loaded cogs.owner
+[2026-08-05 04:00:15,688] INFO: Shard ID None has connected to Gateway (Session ID: 821677ae82776c8bb614367988bc44a3).
+[2026-08-05 04:00:17,693] INFO: running as Meliolin#2512
+[2026-08-05 04:04:28,422] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:04:28,422] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:04:30,868] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:04:30,868] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:04:30,870] INFO: logging in using static token
+[2026-08-05 04:04:31,794] INFO: Loaded cogs.latency
+[2026-08-05 04:04:31,800] INFO: Loaded cogs.owner
+[2026-08-05 04:04:32,813] INFO: Shard ID None has connected to Gateway (Session ID: 02e77bda66e8252beee7afe0e0f4d6ec).
+[2026-08-05 04:04:34,820] INFO: running as Meliolin#2512
+[2026-08-05 04:10:28,777] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:10:28,778] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:10:28,778] INFO: logging in using static token
+[2026-08-05 04:10:29,784] INFO: Loaded cogs.latency
+[2026-08-05 04:10:29,789] INFO: Loaded cogs.owner
+[2026-08-05 04:10:30,822] INFO: Shard ID None has connected to Gateway (Session ID: 15838a2139887493c24cd1010dd7d9d6).
+[2026-08-05 04:10:32,826] INFO: running as Meliolin#2512
+[2026-08-05 04:10:32,826] INFO: owner_id: None, owner_ids: set()
+[2026-08-05 04:11:41,420] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:11:41,420] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:11:41,420] INFO: logging in using static token
+[2026-08-05 04:11:43,101] INFO: Loaded cogs.latency
+[2026-08-05 04:11:43,106] INFO: Loaded cogs.owner
+[2026-08-05 04:11:44,127] INFO: Shard ID None has connected to Gateway (Session ID: 1bdf04c1034e03c358489dc8e5265a73).
+[2026-08-05 04:11:46,131] INFO: running as Meliolin#2512
+[2026-08-05 04:11:46,131] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 04:15:47,710] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:15:47,710] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:15:47,711] INFO: logging in using static token
+[2026-08-05 04:15:49,169] INFO: Loaded cogs.latency
+[2026-08-05 04:15:49,178] INFO: Loaded cogs.owner
+[2026-08-05 04:15:50,393] INFO: Shard ID None has connected to Gateway (Session ID: 5db8c9190a1e3554ed96054e7dba9700).
+[2026-08-05 04:15:52,398] INFO: running as Meliolin#2512
+[2026-08-05 04:15:52,398] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 04:15:58,879] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:15:58,879] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:16:01,164] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:16:01,165] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:16:01,166] INFO: logging in using static token
+[2026-08-05 04:16:02,686] INFO: Loaded cogs.latency
+[2026-08-05 04:16:02,689] INFO: Loaded cogs.owner
+[2026-08-05 04:16:03,674] INFO: Shard ID None has connected to Gateway (Session ID: 6de6cc9aa5002659834fbe2763dff24d).
+[2026-08-05 04:16:05,719] INFO: running as Meliolin#2512
+[2026-08-05 04:16:05,719] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 04:17:19,321] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 04:17:19,321] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 04:17:19,322] INFO: logging in using static token
+[2026-08-05 04:17:21,637] INFO: Loaded cogs.latency
+[2026-08-05 04:17:21,643] INFO: Loaded cogs.owner
+[2026-08-05 04:17:22,963] INFO: Shard ID None has connected to Gateway (Session ID: cb0a88aad3a5e249418aa3a8e2a1584a).
+[2026-08-05 04:17:24,966] INFO: running as Meliolin#2512
+[2026-08-05 04:17:24,966] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 13:09:03,428] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:09:03,428] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:09:03,429] INFO: logging in using static token
+[2026-08-05 13:09:05,055] INFO: Loaded cogs.latency
+[2026-08-05 13:09:05,061] INFO: Loaded cogs.owner
+[2026-08-05 13:09:07,097] INFO: Shard ID None has connected to Gateway (Session ID: f127402d24fe2636b046ba1246b81b60).
+[2026-08-05 13:09:09,102] INFO: running as Meliolin#2512
+[2026-08-05 13:09:09,102] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 13:12:55,946] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:12:55,946] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:12:58,063] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:12:58,064] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:12:58,064] INFO: logging in using static token
+[2026-08-05 13:12:59,647] INFO: Loaded cogs.latency
+[2026-08-05 13:12:59,649] INFO: Loaded cogs.owner
+[2026-08-05 13:13:00,632] INFO: Shard ID None has connected to Gateway (Session ID: 7563d34330d9fd30fbc2080307424702).
+[2026-08-05 13:13:02,638] INFO: running as Meliolin#2512
+[2026-08-05 13:13:02,638] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 13:33:02,584] INFO: Shard ID None has successfully RESUMED session 7563d34330d9fd30fbc2080307424702.
+[2026-08-05 13:35:02,201] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:35:02,201] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:35:04,423] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:35:04,423] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:35:04,423] INFO: logging in using static token
+[2026-08-05 13:35:05,890] INFO: Loaded cogs.latency
+[2026-08-05 13:35:05,894] INFO: Loaded cogs.botperms
+[2026-08-05 13:35:05,895] INFO: Loaded cogs.owner
+[2026-08-05 13:35:06,895] INFO: Shard ID None has connected to Gateway (Session ID: 279cd93a06e7d4f1d018e3d105cee1fb).
+[2026-08-05 13:35:08,898] INFO: running as Meliolin#2512
+[2026-08-05 13:35:08,898] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 13:45:00,868] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:45:00,868] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:45:00,869] INFO: logging in using static token
+[2026-08-05 13:45:02,278] INFO: Loaded cogs.latency
+[2026-08-05 13:45:02,284] ERROR: Bot crashed before/during startup
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 968, in _load_from_module_spec
+    setup = getattr(lib, 'setup')
+            ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'cogs.botperms' has no attribute 'setup'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 116, in <module>
+    bot.run(TOKEN)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 933, in run
+    asyncio.run(runner())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 922, in runner
+    await self.start(token, reconnect=reconnect)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 850, in start
+    await self.login(token)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 693, in login
+    await self.setup_hook()
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 57, in setup_hook
+    await self.load_extension(f"cogs.{filename[:-3]}")
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 971, in _load_from_module_spec
+    raise errors.NoEntryPointError(key)
+discord.ext.commands.errors.NoEntryPointError: Extension 'cogs.botperms' has no 'setup' function.
+[2026-08-05 13:46:53,319] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:46:53,320] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:46:53,321] INFO: logging in using static token
+[2026-08-05 13:46:54,920] INFO: Loaded cogs.latency
+[2026-08-05 13:46:54,929] INFO: Loaded cogs.botperms
+[2026-08-05 13:46:54,933] INFO: Loaded cogs.owner
+[2026-08-05 13:46:56,280] INFO: Shard ID None has connected to Gateway (Session ID: 6a17c728b36d214e9e32af1ce21c60b6).
+[2026-08-05 13:46:58,284] INFO: running as Meliolin#2512
+[2026-08-05 13:46:58,285] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 13:49:34,769] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:49:34,770] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:49:34,770] INFO: logging in using static token
+[2026-08-05 13:49:36,204] INFO: Loaded cogs.latency
+[2026-08-05 13:49:36,212] INFO: Loaded cogs.botperms
+[2026-08-05 13:49:36,214] INFO: Loaded cogs.owner
+[2026-08-05 13:49:37,737] INFO: Shard ID None has connected to Gateway (Session ID: cab4fc6837b263816dde826bff0d08a8).
+[2026-08-05 13:49:39,742] INFO: running as Meliolin#2512
+[2026-08-05 13:49:39,742] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 13:52:08,659] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:52:08,659] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:52:10,724] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:52:10,724] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:52:10,725] INFO: logging in using static token
+[2026-08-05 13:52:12,163] INFO: Loaded cogs.latency
+[2026-08-05 13:52:12,168] INFO: Loaded cogs.botperms
+[2026-08-05 13:52:12,171] INFO: Loaded cogs.owner
+[2026-08-05 13:52:13,488] INFO: Shard ID None has connected to Gateway (Session ID: a545e1a30bd4212881fb931311b42dbf).
+[2026-08-05 13:52:15,492] INFO: running as Meliolin#2512
+[2026-08-05 13:52:15,493] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 13:55:06,675] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:55:06,675] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:55:09,053] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 13:55:09,053] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 13:55:09,054] INFO: logging in using static token
+[2026-08-05 13:55:10,652] INFO: Loaded cogs.latency
+[2026-08-05 13:55:10,656] INFO: Loaded cogs.botperms
+[2026-08-05 13:55:10,657] INFO: Loaded cogs.owner
+[2026-08-05 13:55:10,658] INFO: Loaded cogs.pingrole
+[2026-08-05 13:55:11,873] INFO: Shard ID None has connected to Gateway (Session ID: 041534499ae22a2312213eda66513aab).
+[2026-08-05 13:55:13,876] INFO: running as Meliolin#2512
+[2026-08-05 13:55:13,876] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 14:04:42,192] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 14:04:42,192] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 14:04:44,559] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 14:04:44,559] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 14:04:44,560] INFO: logging in using static token
+[2026-08-05 14:04:45,944] INFO: Loaded cogs.latency
+[2026-08-05 14:04:45,946] INFO: Loaded cogs.botperms
+[2026-08-05 14:04:45,948] INFO: Loaded cogs.owner
+[2026-08-05 14:04:45,949] INFO: Loaded cogs.pingrole
+[2026-08-05 14:04:46,940] INFO: Shard ID None has connected to Gateway (Session ID: 5bdcf35d7b7b16dfa260fd2b3860479b).
+[2026-08-05 14:04:48,947] INFO: running as Meliolin#2512
+[2026-08-05 14:04:48,947] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 14:07:48,117] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 14:07:48,117] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 14:07:48,118] INFO: logging in using static token
+[2026-08-05 14:07:49,654] INFO: Loaded cogs.latency
+[2026-08-05 14:07:49,658] INFO: Loaded cogs.botperms
+[2026-08-05 14:07:49,659] INFO: Loaded cogs.owner
+[2026-08-05 14:07:49,660] INFO: Loaded cogs.pingrole
+[2026-08-05 14:07:50,640] INFO: Shard ID None has connected to Gateway (Session ID: d7e83e487db88a4b3fdbe11bab0a02b7).
+[2026-08-05 14:07:52,645] INFO: running as Meliolin#2512
+[2026-08-05 14:07:52,645] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-05 19:50:30,572] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-05 19:50:30,572] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-05 19:50:30,572] INFO: logging in using static token
+[2026-08-05 19:50:32,646] INFO: Loaded cogs.latency
+[2026-08-05 19:50:32,652] INFO: Loaded cogs.botperms
+[2026-08-05 19:50:32,656] INFO: Loaded cogs.owner
+[2026-08-05 19:50:32,657] INFO: Loaded cogs.pingrole
+[2026-08-05 19:50:33,647] INFO: Shard ID None has connected to Gateway (Session ID: 37c5310ffa642b181743a4168790f570).
+[2026-08-05 19:50:35,652] INFO: running as Meliolin#2512
+[2026-08-05 19:50:35,652] INFO: owner_id: 1527319055017578547, owner_ids: set()

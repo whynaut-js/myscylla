@@ -1,0 +1,149 @@
+[2026-08-08 00:14:27,308] ERROR: Ignoring exception in on_message
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 508, in _run_event
+    await coro(*args, **kwargs)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/owner.py", line 33, in on_message
+    await self._eat_roles(message)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/owner.py", line 71, in _eat_roles
+    await target.remove_roles(*roles_to_strip, reason=f"Roles eaten by {message.author}")
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/member.py", line 1193, in remove_roles
+    await req(guild_id, user_id, role.id, reason=reason)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/http.py", line 772, in request
+    raise Forbidden(response, data)
+discord.errors.Forbidden: 403 Forbidden (error code: 50013): Missing Permissions
+[2026-08-08 00:16:40,228] ERROR: Ignoring exception in on_message
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 508, in _run_event
+    await coro(*args, **kwargs)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/uwu.py", line 185, in on_message
+    await self._uwufy_message(message)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/uwu.py", line 114, in _uwufy_message
+    await message.delete()
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/message.py", line 1308, in delete
+    await self._state.http.delete_message(self.channel.id, self.id)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/http.py", line 774, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10008): Unknown Message
+[2026-08-08 00:31:55,333] ERROR: Database error in command 'boosterrole create': no such table: booster_roles
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 266, in wrapped
+    ret = await coro(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/boosterroles.py", line 87, in brole_create
+    if await self._get_own_role(ctx):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/boosterroles.py", line 12, in _get_own_role
+    row = await self.bot.db.fetchone(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/utils/database.py", line 154, in fetchone
+    cursor = await self.conn.execute(query, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 223, in execute
+    cursor = await self._execute(self._conn.execute, sql, parameters)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 160, in _execute
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 63, in _connection_worker_thread
+    result = function()
+             ^^^^^^^^^^
+sqlite3.OperationalError: no such table: booster_roles
+[2026-08-08 00:36:19,375] ERROR: Database error in command 'boosterrole create': no such table: booster_roles
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 266, in wrapped
+    ret = await coro(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/boosterroles.py", line 87, in brole_create
+    if await self._get_own_role(ctx):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/boosterroles.py", line 12, in _get_own_role
+    row = await self.bot.db.fetchone(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/utils/database.py", line 154, in fetchone
+    cursor = await self.conn.execute(query, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 223, in execute
+    cursor = await self._execute(self._conn.execute, sql, parameters)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 160, in _execute
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 63, in _connection_worker_thread
+    result = function()
+             ^^^^^^^^^^
+sqlite3.OperationalError: no such table: booster_roles
+[2026-08-08 00:37:27,721] ERROR: Database error in command 'boosterrole create': no such table: booster_roles
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 266, in wrapped
+    ret = await coro(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/boosterroles.py", line 87, in brole_create
+    if await self._get_own_role(ctx):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/boosterroles.py", line 12, in _get_own_role
+    row = await self.bot.db.fetchone(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/utils/database.py", line 154, in fetchone
+    cursor = await self.conn.execute(query, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 223, in execute
+    cursor = await self._execute(self._conn.execute, sql, parameters)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 160, in _execute
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/aiosqlite/core.py", line 63, in _connection_worker_thread
+    result = function()
+             ^^^^^^^^^^
+sqlite3.OperationalError: no such table: booster_roles
+[2026-08-08 00:37:47,397] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-08 00:37:47,397] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-08 00:38:09,591] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-08 00:38:09,591] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-08 00:38:09,592] INFO: logging in using static token
+[2026-08-08 00:38:11,968] INFO: Loaded cogs.serverconfig
+[2026-08-08 00:38:11,969] INFO: Loaded cogs.help
+[2026-08-08 00:38:11,979] INFO: Loaded cogs.roles
+[2026-08-08 00:38:11,983] INFO: Loaded cogs.moderation
+[2026-08-08 00:38:11,986] INFO: Loaded cogs.purge
+[2026-08-08 00:38:11,989] INFO: Loaded cogs.snipe
+[2026-08-08 00:38:11,990] INFO: Loaded cogs.latency
+[2026-08-08 00:38:11,991] INFO: Loaded cogs.mimic
+[2026-08-08 00:38:11,995] INFO: Loaded cogs.botperms
+[2026-08-08 00:38:12,006] INFO: Loaded cogs.antinuke
+[2026-08-08 00:38:12,010] INFO: Loaded cogs.uwu
+[2026-08-08 00:38:12,016] INFO: Loaded cogs.giveaway
+[2026-08-08 00:38:12,020] INFO: Loaded cogs.boosterroles
+[2026-08-08 00:38:12,025] INFO: Loaded cogs.owner
+[2026-08-08 00:38:12,032] INFO: Loaded cogs.channels
+[2026-08-08 00:38:12,033] INFO: Loaded cogs.pingrole
+[2026-08-08 00:38:12,035] INFO: Loaded cogs.modlog
+[2026-08-08 00:38:12,038] INFO: Loaded cogs.mutes
+[2026-08-08 00:38:13,184] INFO: Shard ID None has connected to Gateway (Session ID: 6e30101f5eee881f526ee3d89347458f).
+[2026-08-08 00:38:17,022] INFO: running as Meliolin#2512
+[2026-08-08 00:38:17,022] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-08 01:03:41,961] INFO: Shard ID None has successfully RESUMED session 6e30101f5eee881f526ee3d89347458f.
+[2026-08-08 10:22:48,600] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-08 10:22:48,600] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-08 10:22:48,600] INFO: logging in using static token
+[2026-08-08 10:22:50,375] INFO: Loaded cogs.serverconfig
+[2026-08-08 10:22:50,377] INFO: Loaded cogs.help
+[2026-08-08 10:22:50,386] INFO: Loaded cogs.roles
+[2026-08-08 10:22:50,390] INFO: Loaded cogs.moderation
+[2026-08-08 10:22:50,391] INFO: Loaded cogs.purge
+[2026-08-08 10:22:50,392] INFO: Loaded cogs.snipe
+[2026-08-08 10:22:50,392] INFO: Loaded cogs.latency
+[2026-08-08 10:22:50,393] INFO: Loaded cogs.mimic
+[2026-08-08 10:22:50,394] INFO: Loaded cogs.botperms
+[2026-08-08 10:22:50,397] INFO: Loaded cogs.antinuke
+[2026-08-08 10:22:50,400] INFO: Loaded cogs.uwu
+[2026-08-08 10:22:50,404] INFO: Loaded cogs.giveaway
+[2026-08-08 10:22:50,405] INFO: Loaded cogs.boosterroles
+[2026-08-08 10:22:50,407] INFO: Loaded cogs.owner
+[2026-08-08 10:22:50,409] INFO: Loaded cogs.channels
+[2026-08-08 10:22:50,409] INFO: Loaded cogs.pingrole
+[2026-08-08 10:22:50,410] INFO: Loaded cogs.modlog
+[2026-08-08 10:22:50,411] INFO: Loaded cogs.mutes
+[2026-08-08 10:22:51,492] INFO: Shard ID None has connected to Gateway (Session ID: 276066636d78780e67465384513b1e32).
+[2026-08-08 10:22:54,836] INFO: running as Meliolin#2512
+[2026-08-08 10:22:54,836] INFO: owner_id: 1527319055017578547, owner_ids: set()

@@ -1,0 +1,424 @@
+[2026-08-06 13:07:33,969] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 13:07:33,972] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 13:07:33,973] INFO: logging in using static token
+[2026-08-06 13:07:35,277] INFO: Loaded cogs.latency
+[2026-08-06 13:07:35,282] INFO: Loaded cogs.botperms
+[2026-08-06 13:07:35,286] INFO: Loaded cogs.owner
+[2026-08-06 13:07:35,288] INFO: Loaded cogs.pingrole
+[2026-08-06 13:07:36,266] INFO: Shard ID None has connected to Gateway (Session ID: 03f448c9ed88e8fdf3d239c4da771001).
+[2026-08-06 13:07:38,284] INFO: running as Meliolin#2512
+[2026-08-06 13:07:38,284] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-06 13:27:45,324] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 13:27:45,324] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 13:31:04,470] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 13:31:04,470] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 13:31:12,057] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 13:31:12,057] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 13:31:12,059] INFO: logging in using static token
+[2026-08-06 13:31:13,398] INFO: Loaded cogs.moderation
+[2026-08-06 13:31:13,400] INFO: Loaded cogs.latency
+[2026-08-06 13:31:13,402] INFO: Loaded cogs.botperms
+[2026-08-06 13:31:13,405] INFO: Loaded cogs.owner
+[2026-08-06 13:31:13,406] INFO: Loaded cogs.pingrole
+[2026-08-06 13:31:13,408] INFO: Loaded cogs.modlog
+[2026-08-06 13:31:14,361] INFO: Shard ID None has connected to Gateway (Session ID: 330fd70bfec5f5e4c4d700ae44f6390b).
+[2026-08-06 13:31:16,366] INFO: running as Meliolin#2512
+[2026-08-06 13:31:16,366] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-06 14:09:53,998] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:09:53,998] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:15:26,196] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:15:26,196] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:15:38,215] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:15:38,216] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:15:38,217] INFO: logging in using static token
+[2026-08-06 14:15:39,623] INFO: Loaded cogs.help
+[2026-08-06 14:15:39,632] INFO: Loaded cogs.roles
+[2026-08-06 14:15:39,637] INFO: Loaded cogs.moderation
+[2026-08-06 14:15:39,638] INFO: Loaded cogs.latency
+[2026-08-06 14:15:39,641] INFO: Loaded cogs.botperms
+[2026-08-06 14:15:39,644] INFO: Loaded cogs.boosterroles
+[2026-08-06 14:15:39,648] INFO: Loaded cogs.owner
+[2026-08-06 14:15:39,649] INFO: Loaded cogs.pingrole
+[2026-08-06 14:15:39,650] INFO: Loaded cogs.modlog
+[2026-08-06 14:15:40,616] INFO: Shard ID None has connected to Gateway (Session ID: 549bccd328b10cc70796b0f7646549c9).
+[2026-08-06 14:15:42,621] INFO: running as Meliolin#2512
+[2026-08-06 14:15:42,621] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-06 14:28:19,775] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:28:19,775] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:28:34,656] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:28:34,657] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:28:34,657] INFO: logging in using static token
+[2026-08-06 14:28:35,972] INFO: Loaded cogs.help
+[2026-08-06 14:28:35,981] INFO: Loaded cogs.roles
+[2026-08-06 14:28:35,985] INFO: Loaded cogs.moderation
+[2026-08-06 14:28:35,989] INFO: Loaded cogs.purge
+[2026-08-06 14:28:35,990] INFO: Loaded cogs.latency
+[2026-08-06 14:28:35,997] ERROR: Bot crashed before/during startup
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 974, in _load_from_module_spec
+    await setup(self)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/botperms.py", line 116, in setup
+    await bot.add_cog(BotPerms(bot))
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 810, in add_cog
+    cog = await cog._inject(self, override=override, guild=guild, guilds=guilds)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/cog.py", line 729, in _inject
+    raise e
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/cog.py", line 720, in _inject
+    bot.add_command(command)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 264, in add_command
+    super().add_command(command)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 1397, in add_command
+    raise CommandRegistrationError(alias, alias_conflict=True)
+discord.ext.commands.errors.CommandRegistrationError: The alias bp is already an existing command or alias.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 108, in <module>
+    bot.run(TOKEN)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 933, in run
+    asyncio.run(runner())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 922, in runner
+    await self.start(token, reconnect=reconnect)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 850, in start
+    await self.login(token)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 693, in login
+    await self.setup_hook()
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 49, in setup_hook
+    await self.load_extension(f"cogs.{filename[:-3]}")
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 979, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.botperms' raised an error: CommandRegistrationError: The alias bp is already an existing command or alias.
+[2026-08-06 14:44:04,534] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:44:04,534] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:44:04,535] INFO: logging in using static token
+[2026-08-06 14:44:05,888] INFO: Loaded cogs.help
+[2026-08-06 14:44:05,898] INFO: Loaded cogs.roles
+[2026-08-06 14:44:05,909] INFO: Loaded cogs.moderation
+[2026-08-06 14:44:05,919] INFO: Loaded cogs.purge
+[2026-08-06 14:44:05,920] INFO: Loaded cogs.latency
+[2026-08-06 14:44:05,923] INFO: Loaded cogs.botperms
+[2026-08-06 14:44:05,928] INFO: Loaded cogs.boosterroles
+[2026-08-06 14:44:05,932] INFO: Loaded cogs.owner
+[2026-08-06 14:44:05,934] INFO: Loaded cogs.pingrole
+[2026-08-06 14:44:05,936] INFO: Loaded cogs.modlog
+[2026-08-06 14:44:05,943] INFO: Loaded cogs.mutes
+[2026-08-06 14:44:06,964] INFO: Shard ID None has connected to Gateway (Session ID: 4b54a5da696c1f37cd190fa396a11dc9).
+[2026-08-06 14:44:08,967] INFO: running as Meliolin#2512
+[2026-08-06 14:44:08,968] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-06 14:54:09,763] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:54:09,764] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:54:23,023] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:54:23,023] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:54:23,024] INFO: logging in using static token
+[2026-08-06 14:54:24,526] INFO: Loaded cogs.help
+[2026-08-06 14:54:24,535] INFO: Loaded cogs.roles
+[2026-08-06 14:54:24,540] INFO: Loaded cogs.moderation
+[2026-08-06 14:54:24,542] INFO: Loaded cogs.purge
+[2026-08-06 14:54:24,543] INFO: Loaded cogs.latency
+[2026-08-06 14:54:24,545] INFO: Loaded cogs.botperms
+[2026-08-06 14:54:24,549] INFO: Loaded cogs.boosterroles
+[2026-08-06 14:54:24,552] INFO: Loaded cogs.owner
+[2026-08-06 14:54:24,553] INFO: Loaded cogs.pingrole
+[2026-08-06 14:54:24,555] INFO: Loaded cogs.modlog
+[2026-08-06 14:54:24,557] INFO: Loaded cogs.mutes
+[2026-08-06 14:54:25,866] INFO: Shard ID None has connected to Gateway (Session ID: e1e7f6d650454fe116416e5591d8f96b).
+[2026-08-06 14:54:27,869] INFO: running as Meliolin#2512
+[2026-08-06 14:54:27,869] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-06 14:54:58,347] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:54:58,347] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:54:58,348] INFO: logging in using static token
+[2026-08-06 14:55:00,098] INFO: Loaded cogs.help
+[2026-08-06 14:55:00,107] INFO: Loaded cogs.roles
+[2026-08-06 14:55:00,114] INFO: Loaded cogs.moderation
+[2026-08-06 14:55:00,118] INFO: Loaded cogs.purge
+[2026-08-06 14:55:00,120] INFO: Loaded cogs.latency
+[2026-08-06 14:55:00,124] INFO: Loaded cogs.botperms
+[2026-08-06 14:55:00,130] INFO: Loaded cogs.boosterroles
+[2026-08-06 14:55:00,135] INFO: Loaded cogs.owner
+[2026-08-06 14:55:00,136] INFO: Loaded cogs.pingrole
+[2026-08-06 14:55:00,139] INFO: Loaded cogs.modlog
+[2026-08-06 14:55:00,143] INFO: Loaded cogs.mutes
+[2026-08-06 14:55:01,094] ERROR: Bot crashed before/during startup
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 108, in <module>
+    bot.run(TOKEN)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 933, in run
+    asyncio.run(runner())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 922, in runner
+    await self.start(token, reconnect=reconnect)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 851, in start
+    await self.connect(reconnect=reconnect)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 775, in connect
+    raise PrivilegedIntentsRequired(exc.shard_id) from None
+discord.errors.PrivilegedIntentsRequired: Shard ID None is requesting privileged intents that have not been explicitly enabled in the developer portal. It is recommended to go to https://discord.com/developers/applications/ and explicitly enable the privileged intents within your application's page. If this is not possible, then consider disabling the privileged intents instead.
+[2026-08-06 14:56:41,779] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 14:56:41,779] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 14:56:41,780] INFO: logging in using static token
+[2026-08-06 14:56:43,005] INFO: Loaded cogs.help
+[2026-08-06 14:56:43,013] INFO: Loaded cogs.roles
+[2026-08-06 14:56:43,018] INFO: Loaded cogs.moderation
+[2026-08-06 14:56:43,020] INFO: Loaded cogs.purge
+[2026-08-06 14:56:43,022] INFO: Loaded cogs.latency
+[2026-08-06 14:56:43,024] INFO: Loaded cogs.botperms
+[2026-08-06 14:56:43,028] INFO: Loaded cogs.boosterroles
+[2026-08-06 14:56:43,031] INFO: Loaded cogs.owner
+[2026-08-06 14:56:43,033] INFO: Loaded cogs.pingrole
+[2026-08-06 14:56:43,034] INFO: Loaded cogs.modlog
+[2026-08-06 14:56:43,037] INFO: Loaded cogs.mutes
+[2026-08-06 14:56:43,980] INFO: Shard ID None has connected to Gateway (Session ID: 1104b1ecc15727abfebef7754201c915).
+[2026-08-06 14:56:45,987] INFO: running as Meliolin#2512
+[2026-08-06 14:56:45,988] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-06 15:03:40,903] INFO: Shard ID None has successfully RESUMED session 1104b1ecc15727abfebef7754201c915.
+[2026-08-06 15:20:55,267] INFO: Shard ID None has successfully RESUMED session 1104b1ecc15727abfebef7754201c915.
+[2026-08-06 15:47:42,823] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 15:47:42,823] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 15:47:53,742] WARNING: Shard ID None heartbeat blocked for more than 10 seconds.
+Loop thread traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 108, in <module>
+    bot.run(TOKEN)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 933, in run
+    asyncio.run(runner())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 674, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 641, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 1987, in _run_once
+    handle._run()
+  File "/usr/lib/python3.12/asyncio/events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 508, in _run_event
+    await coro(*args, **kwargs)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1421, in on_message
+    await self.process_commands(message)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1418, in process_commands
+    await self.invoke(ctx)  # type: ignore
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1376, in invoke
+    await ctx.command.invoke(ctx)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 1064, in invoke
+    await injected(*ctx.args, **ctx.kwargs)  # type: ignore
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 266, in wrapped
+    ret = await coro(*args, **kwargs)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/owner.py", line 78, in restart
+    result = subprocess.run(
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+  File "/usr/lib/python3.12/subprocess.py", line 2115, in _communicate
+    ready = selector.select(timeout)
+  File "/usr/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+
+[2026-08-06 15:47:55,591] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 15:47:55,591] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 15:47:55,592] INFO: logging in using static token
+[2026-08-06 15:47:57,142] INFO: Loaded cogs.help
+[2026-08-06 15:47:57,152] INFO: Loaded cogs.roles
+[2026-08-06 15:47:57,159] INFO: Loaded cogs.moderation
+[2026-08-06 15:47:57,162] INFO: Loaded cogs.purge
+[2026-08-06 15:47:57,163] INFO: Loaded cogs.latency
+[2026-08-06 15:47:57,165] INFO: Loaded cogs.botperms
+[2026-08-06 15:47:57,169] INFO: Loaded cogs.boosterroles
+[2026-08-06 15:47:57,172] INFO: Loaded cogs.owner
+[2026-08-06 15:47:57,173] INFO: Loaded cogs.pingrole
+[2026-08-06 15:47:57,174] INFO: Loaded cogs.modlog
+[2026-08-06 15:47:57,177] INFO: Loaded cogs.mutes
+[2026-08-06 15:47:58,186] INFO: Shard ID None has connected to Gateway (Session ID: a55057e252d18fa22d4611dfd8b0454f).
+[2026-08-06 15:48:00,190] INFO: running as Meliolin#2512
+[2026-08-06 15:48:00,190] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-06 15:51:06,669] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 15:51:06,670] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 15:51:19,528] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 15:51:19,528] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 15:51:19,529] INFO: logging in using static token
+[2026-08-06 15:51:21,739] INFO: Loaded cogs.help
+[2026-08-06 15:51:21,748] INFO: Loaded cogs.roles
+[2026-08-06 15:51:21,752] INFO: Loaded cogs.moderation
+[2026-08-06 15:51:21,755] INFO: Loaded cogs.purge
+[2026-08-06 15:51:21,756] INFO: Loaded cogs.latency
+[2026-08-06 15:51:21,759] INFO: Loaded cogs.botperms
+[2026-08-06 15:51:21,762] INFO: Loaded cogs.boosterroles
+[2026-08-06 15:51:21,766] INFO: Loaded cogs.owner
+[2026-08-06 15:51:21,767] INFO: Loaded cogs.pingrole
+[2026-08-06 15:51:21,769] INFO: Loaded cogs.modlog
+[2026-08-06 15:51:21,772] INFO: Loaded cogs.mutes
+[2026-08-06 15:51:23,411] INFO: Shard ID None has connected to Gateway (Session ID: 4572f00a72d24019f89ee2d89d95ce7d).
+[2026-08-06 15:51:25,416] INFO: running as Meliolin#2512
+[2026-08-06 15:51:25,416] INFO: owner_id: 1527319055017578547, owner_ids: set()
+[2026-08-06 16:59:47,462] INFO: Shard ID None has successfully RESUMED session 4572f00a72d24019f89ee2d89d95ce7d.
+[2026-08-06 19:59:14,769] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 19:59:14,769] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 19:59:14,771] INFO: logging in using static token
+[2026-08-06 19:59:16,330] ERROR: Bot crashed before/during startup
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 974, in _load_from_module_spec
+    await setup(self)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/help.py", line 120, in setup
+    await bot.add_cog(HelpCog(bot))
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 810, in add_cog
+    cog = await cog._inject(self, override=override, guild=guild, guilds=guilds)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/cog.py", line 729, in _inject
+    raise e
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/cog.py", line 720, in _inject
+    bot.add_command(command)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 264, in add_command
+    super().add_command(command)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/core.py", line 1391, in add_command
+    raise CommandRegistrationError(command.name)
+discord.ext.commands.errors.CommandRegistrationError: The command help is already an existing command or alias.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 132, in <module>
+    bot.run(TOKEN)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 933, in run
+    asyncio.run(runner())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 922, in runner
+    await self.start(token, reconnect=reconnect)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 850, in start
+    await self.login(token)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 693, in login
+    await self.setup_hook()
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 74, in setup_hook
+    await self.load_extension(f"cogs.{filename[:-3]}")
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 979, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.help' raised an error: CommandRegistrationError: The command help is already an existing command or alias.
+[2026-08-06 20:00:24,070] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 20:00:24,070] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 20:00:24,071] INFO: logging in using static token
+[2026-08-06 20:00:25,753] INFO: Loaded cogs.help
+[2026-08-06 20:00:25,770] ERROR: Bot crashed before/during startup
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/cogs/roles.py", line 7, in <module>
+    from utils import antinuke as an
+ImportError: cannot import name 'antinuke' from 'utils' (/home/light/Documents/main.exe/[00] WIP/Meliolin/utils/__init__.py)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 124, in <module>
+    bot.run(TOKEN)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 933, in run
+    asyncio.run(runner())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 922, in runner
+    await self.start(token, reconnect=reconnect)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 850, in start
+    await self.login(token)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/client.py", line 693, in login
+    await self.setup_hook()
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/main.py", line 66, in setup_hook
+    await self.load_extension(f"cogs.{filename[:-3]}")
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "/home/light/Documents/main.exe/[00] WIP/Meliolin/venv/lib/python3.12/site-packages/discord/ext/commands/bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.roles' raised an error: ImportError: cannot import name 'antinuke' from 'utils' (/home/light/Documents/main.exe/[00] WIP/Meliolin/utils/__init__.py)
+[2026-08-06 20:01:31,775] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 20:01:31,775] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 20:01:31,776] INFO: logging in using static token
+[2026-08-06 20:01:33,356] INFO: Loaded cogs.help
+[2026-08-06 20:01:33,372] INFO: Loaded cogs.roles
+[2026-08-06 20:01:33,386] INFO: Loaded cogs.moderation
+[2026-08-06 20:01:33,389] INFO: Loaded cogs.purge
+[2026-08-06 20:01:33,391] INFO: Loaded cogs.latency
+[2026-08-06 20:01:33,393] INFO: Loaded cogs.botperms
+[2026-08-06 20:01:33,397] INFO: Loaded cogs.boosterroles
+[2026-08-06 20:01:33,402] INFO: Loaded cogs.owner
+[2026-08-06 20:01:33,404] INFO: Loaded cogs.pingrole
+[2026-08-06 20:01:33,406] INFO: Loaded cogs.modlog
+[2026-08-06 20:01:33,410] INFO: Loaded cogs.mutes
+[2026-08-06 20:01:34,670] INFO: Shard ID None has connected to Gateway (Session ID: 3202b945587cc730318deaf8d6ae09a7).
+[2026-08-06 20:01:36,673] INFO: running as Meliolin#2512
+[2026-08-06 20:10:52,206] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 20:10:52,207] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 20:10:52,208] INFO: logging in using static token
+[2026-08-06 20:10:53,566] INFO: Loaded cogs.help
+[2026-08-06 20:10:53,592] INFO: Loaded cogs.roles
+[2026-08-06 20:10:53,606] INFO: Loaded cogs.moderation
+[2026-08-06 20:10:53,612] INFO: Loaded cogs.purge
+[2026-08-06 20:10:53,615] INFO: Loaded cogs.latency
+[2026-08-06 20:10:53,621] INFO: Loaded cogs.botperms
+[2026-08-06 20:10:53,630] INFO: Loaded cogs.boosterroles
+[2026-08-06 20:10:53,636] INFO: Loaded cogs.owner
+[2026-08-06 20:10:53,639] INFO: Loaded cogs.pingrole
+[2026-08-06 20:10:53,644] INFO: Loaded cogs.modlog
+[2026-08-06 20:10:53,651] INFO: Loaded cogs.mutes
+[2026-08-06 20:10:54,747] INFO: Shard ID None has connected to Gateway (Session ID: 46f7f1d5436008e83a89c7977a4b20b3).
+[2026-08-06 20:10:56,751] INFO: running as Meliolin#2512
+[2026-08-06 20:14:33,144] WARNING: PyNaCl is not installed, voice will NOT be supported
+[2026-08-06 20:14:33,144] WARNING: davey is not installed, voice will NOT be supported
+[2026-08-06 20:14:33,145] INFO: logging in using static token
+[2026-08-06 20:14:34,609] INFO: Loaded cogs.help
+[2026-08-06 20:14:34,619] INFO: Loaded cogs.roles
+[2026-08-06 20:14:34,623] INFO: Loaded cogs.moderation
+[2026-08-06 20:14:34,625] INFO: Loaded cogs.purge
+[2026-08-06 20:14:34,626] INFO: Loaded cogs.latency
+[2026-08-06 20:14:34,629] INFO: Loaded cogs.botperms
+[2026-08-06 20:14:34,634] INFO: Loaded cogs.boosterroles
+[2026-08-06 20:14:34,637] INFO: Loaded cogs.owner
+[2026-08-06 20:14:34,638] INFO: Loaded cogs.pingrole
+[2026-08-06 20:14:34,640] INFO: Loaded cogs.modlog
+[2026-08-06 20:14:34,644] INFO: Loaded cogs.mutes
+[2026-08-06 20:14:36,037] INFO: Shard ID None has connected to Gateway (Session ID: 2cb80a70276ba3ec3350fc9074b241b9).
+[2026-08-06 20:14:38,041] INFO: running as Meliolin#2512
+[2026-08-06 20:31:15,268] INFO: Shard ID None session has been invalidated.
+[2026-08-06 20:31:22,129] INFO: Shard ID None has connected to Gateway (Session ID: 51d6c5d2816415d693ebb0ad8931291d).
+[2026-08-06 20:31:24,134] INFO: running as Meliolin#2512
+[2026-08-06 20:56:32,071] INFO: Shard ID None session has been invalidated.
+[2026-08-06 20:56:38,524] INFO: Shard ID None has connected to Gateway (Session ID: 7d80dc8518bebed5a4cd5eb4315ae776).
+[2026-08-06 20:56:40,582] INFO: running as Meliolin#2512
+[2026-08-06 21:48:38,908] INFO: Shard ID None has successfully RESUMED session 7d80dc8518bebed5a4cd5eb4315ae776.
