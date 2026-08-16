@@ -4,8 +4,5 @@ __pycache__/
 *.pyc
 bot.db
 restart_info.txt
-tken
-tken
-bot.log*
 bot.log
 bot.log.*
