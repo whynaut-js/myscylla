@@ -6,3 +6,4 @@ bot.db
 restart_info.txt
 tken
 tken
+bot.log*
