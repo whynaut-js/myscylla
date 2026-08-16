@@ -3,6 +3,7 @@ import time
 import json
 import asyncio
 from collections import defaultdict
+from config.owner import Me
 
 DEFAULT_CONFIG = {
     "channel_delete": {"count": 2, "window": 10},
@@ -16,8 +17,8 @@ DEFAULT_CONFIG = {
 
 tracker = {}
 instant_channel_cache = {}
-event_cache = {}
-_locks = defaultdict(asyncio.Lock)  # {guild_id: {user_id: {action: [(payload, timestamp), ...]}}}
+event_cache = {}  # {guild_id: {user_id: {action: [(payload, timestamp), ...]}}}
+_locks = defaultdict(asyncio.Lock)
 
 async def get_config(bot, guild_id: int):
     row = await bot.db.fetchone(
@@ -80,6 +81,11 @@ async def is_antinuke_admin(bot, guild: discord.Guild, user: discord.User) -> bo
     return row is not None
 
 async def is_whitelisted(bot, guild: discord.Guild, user: discord.User) -> bool:
+    # FIX #2: bot owner / config.owner.Me now always bypass antinuke, everywhere —
+    # matches the same global bypass every command already has, which this
+    # (being event-driven, not a command) previously did NOT inherit.
+    if user.id in Me or await bot.is_owner(user):
+        return True
     if user.id == bot.user.id or await is_antinuke_admin(bot, guild, user):
         return True
     row = await bot.db.fetchone(
@@ -88,14 +94,24 @@ async def is_whitelisted(bot, guild: discord.Guild, user: discord.User) -> bool:
     )
     return row is not None
 
-async def get_executor(guild: discord.Guild, action: discord.AuditLogAction, target_id: int = None):
-    try:
-        async for entry in guild.audit_logs(limit=5, action=action):
-            if target_id is None or (entry.target and entry.target.id == target_id):
-                return entry.user
-    except Exception:
-        pass
-    return None
+async def get_executor(guild: discord.Guild, action: discord.AuditLogAction, target_id: int = None, retry: bool = True):
+    # FIX #6: audit logs can lag a second or two behind the actual event.
+    # One short retry catches most of those races instead of silently
+    # returning None and letting the action go unattributed.
+    async def _lookup():
+        try:
+            async for entry in guild.audit_logs(limit=5, action=action):
+                if target_id is None or (entry.target and entry.target.id == target_id):
+                    return entry.user
+        except Exception:
+            pass
+        return None
+
+    result = await _lookup()
+    if result is None and retry:
+        await asyncio.sleep(1.5)
+        result = await _lookup()
+    return result
 
 async def punish(guild: discord.Guild, executor: discord.Member, config_punishment: str, reason: str) -> tuple[bool, str]:
     """Returns (success, actual_punishment_applied) so callers can log the truth
@@ -128,7 +144,7 @@ async def punish(guild: discord.Guild, executor: discord.Member, config_punishme
         except Exception:
             return False, "strip (FAILED — check bot's role position vs offender's role)"
 
-async def log_action(bot, guild: discord.Guild, executor: discord.User, action: str, details: str):
+async def log_action(bot, guild: discord.Guild, executor: discord.User, action: str, details: str, punish_label: str = None):
     config = await get_config(bot, guild.id)
     if not config["log_channel_id"]:
         return
@@ -136,10 +152,13 @@ async def log_action(bot, guild: discord.Guild, executor: discord.User, action: 
     if not log_channel:
         return
 
-    applied_punishment = "ban" if executor.bot else config["punishment"]
+    # FIX #1: use the ACTUAL result of the punishment attempt, not just the
+    # configured setting — previously this always said e.g. "ban" even if
+    # the ban silently failed, contradicting the ✅/⚠️ status in `details`.
+    applied_punishment = punish_label if punish_label is not None else "N/A"
 
     embed = discord.Embed(
-        title="🚨 ANTINUKE TRIGGERED & ROLLED BACK",
+        title="🚨 ANTINUKE TRIGGERED",
         color=discord.Color.red(),
         timestamp=discord.utils.utcnow()
     )
@@ -191,6 +210,69 @@ async def strip_everyone_perm(guild: discord.Guild, member: discord.Member):
                 await role.edit(permissions=new_perms, reason="Antinuke: revoked after @everyone spam")
             except Exception:
                 pass
+
+async def _restore_channel(guild: discord.Guild, info: dict):
+    category = guild.get_channel(info.get("category_id")) if info.get("category_id") else None
+
+    overwrites = {}
+    for ow in info.get("overwrites", []):
+        target = None
+        if ow["target_type"] == "role":
+            target = guild.get_role(ow["target_id"])
+        else:
+            target = guild.get_member(ow["target_id"])
+        if target:
+            overwrites[target] = discord.PermissionOverwrite.from_pair(
+                discord.Permissions(ow["allow"]), discord.Permissions(ow["deny"])
+            )
+
+    kwargs = {"category": category, "overwrites": overwrites, "reason": "Antinuke Rollback"}
+    if info.get("type") == discord.ChannelType.voice:
+        new_channel = await guild.create_voice_channel(info["name"], **kwargs)
+    else:
+        new_channel = await guild.create_text_channel(info["name"], **kwargs)
+        try:
+            await new_channel.edit(
+                topic=info.get("topic"),
+                slowmode_delay=info.get("slowmode_delay", 0) or 0,
+                nsfw=info.get("nsfw", False),
+            )
+        except Exception:
+            pass
+
+    try:
+        await new_channel.edit(position=info.get("position", 0))
+    except Exception:
+        pass
+
+    return new_channel
+
+async def _restore_role(guild: discord.Guild, info: dict):
+    new_role = await guild.create_role(
+        name=info["name"],
+        permissions=discord.Permissions(info["permissions"]),
+        color=discord.Color(info["color"]),
+        hoist=info["hoist"],
+        mentionable=info["mentionable"],
+        reason="Antinuke Rollback"
+    )
+
+    try:
+        await new_role.edit(position=info.get("position", 0))
+    except Exception:
+        pass
+
+    reassigned = 0
+    for member_id in info.get("member_ids", []):
+        member = guild.get_member(member_id)
+        if member:
+            try:
+                await member.add_roles(new_role, reason="Antinuke Rollback: restoring deleted role")
+                reassigned += 1
+            except Exception:
+                pass
+
+    return new_role, reassigned
 
 async def handle_detected(bot, guild: discord.Guild, executor: discord.User, action: str, details: str, target_obj=None):
     if not executor or executor.id == bot.user.id:
@@ -251,15 +333,11 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
                 recreated = 0
                 for info in payloads:
                     try:
-                        category = guild.get_channel(info["category_id"]) if info.get("category_id") else None
-                        if info.get("type") == discord.ChannelType.voice:
-                            await guild.create_voice_channel(info["name"], category=category, reason="Antinuke Rollback")
-                        else:
-                            await guild.create_text_channel(info["name"], category=category, reason="Antinuke Rollback")
+                        await _restore_channel(guild, info)
                         recreated += 1
                     except Exception:
                         pass
-                rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted channel(s)."
+                rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted channel(s) (name, permissions, topic, slowmode restored)."
 
             elif action == "role_delete":
                 payloads = _pop_cached_events(guild.id, executor.id, action, window_seconds)
@@ -267,22 +345,17 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
                     payloads = [target_obj]
 
                 recreated = 0
+                total_reassigned = 0
                 for info in payloads:
                     try:
-                        await guild.create_role(
-                            name=info["name"],
-                            permissions=discord.Permissions(info["permissions"]),
-                            color=discord.Color(info["color"]),
-                            hoist=info["hoist"],
-                            mentionable=info["mentionable"],
-                            reason="Antinuke Rollback"
-                        )
+                        _, reassigned = await _restore_role(guild, info)
                         recreated += 1
+                        total_reassigned += reassigned
                     except Exception:
                         pass
-                rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted role(s)."
+                rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted role(s), reassigned to {total_reassigned} member(s)."
 
-            await log_action(bot, guild, executor, action, rollback_msg)
+            await log_action(bot, guild, executor, action, rollback_msg, punish_label=punish_label)
         else:
             user_tracker[action] = timestamps
 
@@ -304,7 +377,57 @@ async def handle_detected_instant(bot, guild: discord.Guild, executor: discord.U
         return
 
     member = guild.get_member(executor.id)
+    punish_success, punish_label = (False, "N/A (member left already)")
     if member:
-        await punish(guild, member, config["punishment"], f"Antinuke: instant trigger")
+        punish_success, punish_label = await punish(guild, member, config["punishment"], "Antinuke: instant trigger")
 
-    await log_action(bot, guild, executor, "Instant Protection", details)
+    status_icon = "✅" if punish_success else "⚠️"
+    await log_action(bot, guild, executor, "Instant Protection", f"{details}\n{status_icon} **Punishment:** `{punish_label}`", punish_label=punish_label)
+
+async def cleanup_stale_entries(max_age_seconds: int = 3600):
+    """FIX #4: memory leak fix. Anything sitting in the trackers/caches for
+    longer than max_age_seconds gets dropped — previously entries only got
+    cleared when a threshold was actually crossed, so users who stayed just
+    under the limit accumulated forever on a long-running bot. Also prunes
+    unheld locks so _locks doesn't grow forever either."""
+    now = time.time()
+
+    for guild_id in list(tracker.keys()):
+        for user_id in list(tracker[guild_id].keys()):
+            for action in list(tracker[guild_id][user_id].keys()):
+                tracker[guild_id][user_id][action] = [
+                    t for t in tracker[guild_id][user_id][action] if now - t <= max_age_seconds
+                ]
+                if not tracker[guild_id][user_id][action]:
+                    tracker[guild_id][user_id].pop(action, None)
+            if not tracker[guild_id][user_id]:
+                tracker[guild_id].pop(user_id, None)
+        if not tracker[guild_id]:
+            tracker.pop(guild_id, None)
+
+    for guild_id in list(instant_channel_cache.keys()):
+        for user_id in list(instant_channel_cache[guild_id].keys()):
+            instant_channel_cache[guild_id][user_id] = [
+                (c_id, t) for c_id, t in instant_channel_cache[guild_id][user_id] if now - t <= max_age_seconds
+            ]
+            if not instant_channel_cache[guild_id][user_id]:
+                instant_channel_cache[guild_id].pop(user_id, None)
+        if not instant_channel_cache[guild_id]:
+            instant_channel_cache.pop(guild_id, None)
+
+    for guild_id in list(event_cache.keys()):
+        for user_id in list(event_cache[guild_id].keys()):
+            for action in list(event_cache[guild_id][user_id].keys()):
+                event_cache[guild_id][user_id][action] = [
+                    (p, t) for p, t in event_cache[guild_id][user_id][action] if now - t <= max_age_seconds
+                ]
+                if not event_cache[guild_id][user_id][action]:
+                    event_cache[guild_id][user_id].pop(action, None)
+            if not event_cache[guild_id][user_id]:
+                event_cache[guild_id].pop(user_id, None)
+        if not event_cache[guild_id]:
+            event_cache.pop(guild_id, None)
+
+    for key in list(_locks.keys()):
+        if not _locks[key].locked():
+            _locks.pop(key, None)
