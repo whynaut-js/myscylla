@@ -7,3 +7,5 @@ restart_info.txt
 tken
 tken
 bot.log*
+bot.log
+bot.log.*
