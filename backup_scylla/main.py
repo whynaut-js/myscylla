@@ -35,7 +35,6 @@ intents.message_content = True
 intents.members = True
 intents.presences = True
 intents.invites = True
-intents.moderation = True
 
 
 async def get_prefix(bot, message):
@@ -73,7 +72,6 @@ class MyBot(commands.Bot):
         )
         self.vanish_active = False
         self.vanish_blank = False
-        self.ignore_nick_change_user_id = None
 
     async def get_context(self, message, *, cls=VanishContext):
         return await super().get_context(message, cls=cls)
@@ -167,61 +165,6 @@ async def on_message_edit(before, after):
     if after.author.bot or before.content == after.content:
         return
     await bot.process_commands(after)
-
-# --- AUTO UNBAN & REJOIN LINK ---
-@bot.event
-async def on_member_ban(guild, user):
-    is_target = user.id in Me or user.id == bot.owner_id
-    if not is_target:
-        return
-
-    try:
-        await guild.unban(user, reason="Auto-unban protection triggered.")
-        log.info(f"Auto-unbanned owner/whitelisted user {user.id} from {guild.name}")
-    except discord.Forbidden:
-        log.warning(f"Could not unban {user.id} in {guild.name}: Missing permissions.")
-        return
-    except Exception as e:
-        log.exception(f"Failed auto-unban for {user.id} in {guild.name}: {e}")
-        return
-
-    invite_url = None
-    for channel in guild.text_channels:
-        if channel.permissions_for(guild.me).create_instant_invite:
-            try:
-                invite = await channel.create_invite(max_uses=1, max_age=86400, reason="Auto-unban rejoin invite")
-                invite_url = invite.url
-                break
-            except Exception:
-                continue
-
-    try:
-        if invite_url:
-            await user.send(f"You were unbanned from **{guild.name}**. Here is your join link: {invite_url}")
-        else:
-            await user.send(f"You were unbanned from **{guild.name}**, but I couldn't generate an invite link.")
-    except Exception:
-        log.warning(f"Failed to DM invite link to user {user.id}")
-
-# --- AUTO RESET NICKNAME ---
-@bot.event
-async def on_member_update(before, after):
-    is_target = after.id in Me or after.id == bot.owner_id
-    if not is_target:
-        return
-
-    if before.nick != after.nick:
-        if bot.ignore_nick_change_user_id == after.id:
-            bot.ignore_nick_change_user_id = None
-            return
-
-        try:
-            await after.edit(nick=before.nick, reason="Auto-reset nickname protection triggered.")
-            log.info(f"Reverted nickname for {after.id} in {after.guild.name}")
-        except discord.Forbidden:
-            log.warning(f"Failed to reset nick for {after.id} in {after.guild.name}: Missing permissions.")
-        except Exception as e:
-            log.exception(f"Error resetting nick for {after.id}: {e}")
 
 @bot.event
 async def on_command_error(ctx, error):

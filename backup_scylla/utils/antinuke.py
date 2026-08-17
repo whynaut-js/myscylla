@@ -6,18 +6,18 @@ from collections import defaultdict
 from config.owner import Me
 
 DEFAULT_CONFIG = {
-    "channel_delete": {"count": 2, "window": 10, "punishment": None},
-    "channel_create": {"count": 2, "window": 10, "punishment": None},
-    "role_delete": {"count": 2, "window": 10, "punishment": None},
-    "ban": {"count": 2, "window": 10, "punishment": None},
-    "kick": {"count": 2, "window": 10, "punishment": None},
-    "webhook_create": {"count": 2, "window": 10, "punishment": None},
-    "everyone_ping": {"count": 1, "window": 10, "punishment": None},
+    "channel_delete": {"count": 2, "window": 10},
+    "channel_create": {"count": 2, "window": 10},
+    "role_delete": {"count": 2, "window": 10},
+    "ban": {"count": 2, "window": 10},
+    "kick": {"count": 2, "window": 10},
+    "webhook_create": {"count": 2, "window": 10},
+    "everyone_ping": {"count": 1, "window": 10}
 }
 
 tracker = {}
 instant_channel_cache = {}
-event_cache = {}
+event_cache = {}  # {guild_id: {user_id: {action: [(payload, timestamp), ...]}}}
 _locks = defaultdict(asyncio.Lock)
 
 async def get_config(bot, guild_id: int):
@@ -26,18 +26,17 @@ async def get_config(bot, guild_id: int):
         (guild_id,)
     )
     if not row:
-        return {"enabled": 0, "log_channel_id": None, "punishment": "strip", "thresholds": {k: v.copy() for k, v in DEFAULT_CONFIG.items()}}
+        return {"enabled": 0, "log_channel_id": None, "punishment": "strip", "thresholds": DEFAULT_CONFIG.copy()}
 
-    thresholds = {k: v.copy() for k, v in DEFAULT_CONFIG.items()}
+    thresholds = DEFAULT_CONFIG.copy()
     if row[3]:
         try:
             saved = json.loads(row[3])
             for k, v in saved.items():
                 if isinstance(v, int):
-                    thresholds[k] = {"count": v, "window": 10, "punishment": None}
+                    thresholds[k] = {"count": v, "window": 10}
                 elif isinstance(v, dict):
-                    thresholds.setdefault(k, {"count": 2, "window": 10, "punishment": None})
-                    thresholds[k].update(v)
+                    thresholds[k] = v
         except Exception:
             pass
 
@@ -54,25 +53,13 @@ async def set_punishment(bot, guild_id: int, punishment: str):
         (guild_id, punishment)
     )
 
-async def set_threshold(bot, guild_id: int, action: str, count: int, window: int = 10, punishment: str = None):
+async def set_threshold(bot, guild_id: int, action: str, count: int, window: int = 10):
     config = await get_config(bot, guild_id)
     t = config["thresholds"]
-    t[action] = {"count": count, "window": window, "punishment": punishment}
+    t[action] = {"count": count, "window": window}
     await bot.db.execute(
         "INSERT INTO antinuke_config (guild_id, thresholds_json) VALUES (?, ?) ON CONFLICT(guild_id) DO UPDATE SET thresholds_json = excluded.thresholds_json",
         (guild_id, json.dumps(t))
-    )
-
-async def set_enabled(bot, guild_id: int, enabled: bool):
-    await bot.db.execute(
-        "INSERT INTO antinuke_config (guild_id, enabled) VALUES (?, ?) ON CONFLICT(guild_id) DO UPDATE SET enabled = excluded.enabled",
-        (guild_id, 1 if enabled else 0)
-    )
-
-async def set_log_channel(bot, guild_id: int, channel_id: int):
-    await bot.db.execute(
-        "INSERT INTO antinuke_config (guild_id, log_channel_id) VALUES (?, ?) ON CONFLICT(guild_id) DO UPDATE SET log_channel_id = excluded.log_channel_id",
-        (guild_id, channel_id)
     )
 
 async def is_antinuke_owner(bot, guild: discord.Guild, user: discord.User) -> bool:
@@ -94,9 +81,9 @@ async def is_antinuke_admin(bot, guild: discord.Guild, user: discord.User) -> bo
     return row is not None
 
 async def is_whitelisted(bot, guild: discord.Guild, user: discord.User) -> bool:
-    # Bot owner / config.owner.Me ALWAYS bypass antinuke entirely — this is
-    # checked here (not just in command decorators) so it also covers the
-    # event-driven listeners, which don't go through command checks at all.
+    # FIX #2: bot owner / config.owner.Me now always bypass antinuke, everywhere —
+    # matches the same global bypass every command already has, which this
+    # (being event-driven, not a command) previously did NOT inherit.
     if user.id in Me or await bot.is_owner(user):
         return True
     if user.id == bot.user.id or await is_antinuke_admin(bot, guild, user):
@@ -107,17 +94,10 @@ async def is_whitelisted(bot, guild: discord.Guild, user: discord.User) -> bool:
     )
     return row is not None
 
-async def add_whitelist(bot, guild_id: int, user_id: int):
-    await bot.db.execute(
-        "INSERT OR IGNORE INTO antinuke_whitelist (guild_id, user_id) VALUES (?, ?)", (guild_id, user_id)
-    )
-
-async def remove_whitelist(bot, guild_id: int, user_id: int):
-    await bot.db.execute(
-        "DELETE FROM antinuke_whitelist WHERE guild_id = ? AND user_id = ?", (guild_id, user_id)
-    )
-
 async def get_executor(guild: discord.Guild, action: discord.AuditLogAction, target_id: int = None, retry: bool = True):
+    # FIX #6: audit logs can lag a second or two behind the actual event.
+    # One short retry catches most of those races instead of silently
+    # returning None and letting the action go unattributed.
     async def _lookup():
         try:
             async for entry in guild.audit_logs(limit=5, action=action):
@@ -141,19 +121,15 @@ async def punish(guild: discord.Guild, executor: discord.Member, config_punishme
     if actual_punishment == "ban":
         try:
             await guild.ban(executor, reason=reason)
-            return True, "SUCCESS (ban)"
-        except discord.Forbidden:
-            return False, "FAILED (Missing Perms)"
+            return True, "ban"
         except Exception:
-            return False, "FAILED (Hierarchy)"
+            return False, "ban (FAILED — check bot's role position vs offender's role)"
     elif actual_punishment == "kick":
         try:
             await executor.kick(reason=reason)
-            return True, "SUCCESS (kick)"
-        except discord.Forbidden:
-            return False, "FAILED (Missing Perms)"
+            return True, "kick"
         except Exception:
-            return False, "FAILED (Hierarchy)"
+            return False, "kick (FAILED — check bot's role position vs offender's role)"
     else:
         try:
             dangerous_perms = ["administrator", "manage_guild", "manage_roles", "manage_channels", "ban_members", "kick_members"]
@@ -163,12 +139,10 @@ async def punish(guild: discord.Guild, executor: discord.Member, config_punishme
             ]
             if roles_to_remove:
                 await executor.remove_roles(*roles_to_remove, reason=reason)
-                return True, "SUCCESS (strip)"
-            return False, "FAILED (No dangerous roles below bot's position)"
-        except discord.Forbidden:
-            return False, "FAILED (Missing Perms)"
+                return True, "strip"
+            return False, "strip (no dangerous roles found, or all above bot's role)"
         except Exception:
-            return False, "FAILED (Hierarchy)"
+            return False, "strip (FAILED — check bot's role position vs offender's role)"
 
 async def log_action(bot, guild: discord.Guild, executor: discord.User, action: str, details: str, punish_label: str = None):
     config = await get_config(bot, guild.id)
@@ -178,6 +152,9 @@ async def log_action(bot, guild: discord.Guild, executor: discord.User, action: 
     if not log_channel:
         return
 
+    # FIX #1: use the ACTUAL result of the punishment attempt, not just the
+    # configured setting — previously this always said e.g. "ban" even if
+    # the ban silently failed, contradicting the ✅/⚠️ status in `details`.
     applied_punishment = punish_label if punish_label is not None else "N/A"
 
     embed = discord.Embed(
@@ -187,7 +164,7 @@ async def log_action(bot, guild: discord.Guild, executor: discord.User, action: 
     )
     embed.add_field(name="Offender", value=f"{executor.mention} (`{executor.id}`)", inline=False)
     embed.add_field(name="Action Type", value=f"`{action}`", inline=True)
-    embed.add_field(name="Punishment Result", value=f"`{applied_punishment}`", inline=True)
+    embed.add_field(name="Punishment Applied", value=f"`{applied_punishment}`", inline=True)
     embed.add_field(name="Details & Rollback", value=details, inline=False)
 
     try:
@@ -202,6 +179,10 @@ async def track_channel_creation(guild_id: int, user_id: int, channel_id: int):
     u_cache.append((channel_id, now))
 
 async def track_event(guild_id: int, user_id: int, action: str, payload: dict):
+    """Records a payload (e.g. deleted-channel/role info) the moment it happens,
+    so if the threshold is crossed later in the same window, EVERYTHING that
+    happened during the window can be rolled back — not just the one event
+    that happened to trip the threshold."""
     now = time.time()
     g_cache = event_cache.setdefault(guild_id, {})
     u_cache = g_cache.setdefault(user_id, {})
@@ -216,6 +197,9 @@ def _pop_cached_events(guild_id: int, user_id: int, action: str, window_seconds:
     return [payload for payload, t in entries if now - t <= window_seconds + 5]
 
 async def strip_everyone_perm(guild: discord.Guild, member: discord.Member):
+    """Immediately revokes 'mention_everyone' from every role the offender has,
+    so any further pings they queue up (before the ban/kick/strip lands) fail
+    outright instead of sending. Only touches roles below the bot's own role."""
     for role in member.roles:
         if role.is_default() or role >= guild.me.top_role:
             continue
@@ -232,7 +216,11 @@ async def _restore_channel(guild: discord.Guild, info: dict):
 
     overwrites = {}
     for ow in info.get("overwrites", []):
-        target = guild.get_role(ow["target_id"]) if ow["target_type"] == "role" else guild.get_member(ow["target_id"])
+        target = None
+        if ow["target_type"] == "role":
+            target = guild.get_role(ow["target_id"])
+        else:
+            target = guild.get_member(ow["target_id"])
         if target:
             overwrites[target] = discord.PermissionOverwrite.from_pair(
                 discord.Permissions(ow["allow"]), discord.Permissions(ow["deny"])
@@ -299,10 +287,9 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
     lock_key = (guild.id, executor.id, action)
     async with _locks[lock_key]:
         now = time.time()
-        action_cfg = config["thresholds"].get(action, {"count": 2, "window": 10, "punishment": None})
+        action_cfg = config["thresholds"].get(action, {"count": 2, "window": 10})
         count_limit = action_cfg["count"]
         window_seconds = action_cfg["window"]
-        punishment_to_use = action_cfg.get("punishment") or config["punishment"]
 
         guild_tracker = tracker.setdefault(guild.id, {})
         user_tracker = guild_tracker.setdefault(executor.id, {})
@@ -316,7 +303,7 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
             member = guild.get_member(executor.id)
             punish_success, punish_label = (False, "N/A (member left already)")
             if member:
-                punish_success, punish_label = await punish(guild, member, punishment_to_use, f"Antinuke: {action} threshold reached")
+                punish_success, punish_label = await punish(guild, member, config["punishment"], f"Antinuke: {action} threshold reached")
 
             rollback_msg = details
             status_icon = "✅" if punish_success else "⚠️"
@@ -350,7 +337,7 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
                         recreated += 1
                     except Exception:
                         pass
-                rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted channel(s) (permissions, topic, slowmode, position restored)."
+                rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted channel(s) (name, permissions, topic, slowmode restored)."
 
             elif action == "role_delete":
                 payloads = _pop_cached_events(guild.id, executor.id, action, window_seconds)
@@ -398,6 +385,11 @@ async def handle_detected_instant(bot, guild: discord.Guild, executor: discord.U
     await log_action(bot, guild, executor, "Instant Protection", f"{details}\n{status_icon} **Punishment:** `{punish_label}`", punish_label=punish_label)
 
 async def cleanup_stale_entries(max_age_seconds: int = 3600):
+    """FIX #4: memory leak fix. Anything sitting in the trackers/caches for
+    longer than max_age_seconds gets dropped — previously entries only got
+    cleared when a threshold was actually crossed, so users who stayed just
+    under the limit accumulated forever on a long-running bot. Also prunes
+    unheld locks so _locks doesn't grow forever either."""
     now = time.time()
 
     for guild_id in list(tracker.keys()):

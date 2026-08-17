@@ -10,9 +10,14 @@ import glob
 from discord.ext import commands
 from utils.checks import is_owner
 from utils.confirm import ask_confirm
+from utils.vanish_style import BLANK_NAME, BLANK_AVATAR
 from utils.webhook import get_relay_webhook
 from utils.fuzzy import FuzzyRole
 from config.owner import Me
+from utils.text_triggers import register_trigger, get_triggers_for
+
+register_trigger("let me eat your roles", "Reply to a user's message to strip all their roles (saved so they can be restored)")
+register_trigger("okay, fine take your roles back", "Reply to a user's message to restore roles you previously ate")
 
 class Owner(commands.Cog):
     def __init__(self, bot):
@@ -22,6 +27,62 @@ class Owner(commands.Cog):
         if user.id in Me:
             return True
         return await self.bot.is_owner(user)
+
+    async def cog_before_invoke(self, ctx):
+        """Detects trailing '_c' (reply in channel instead of DM), '_d'
+        (delete the invoking message after running), and/or '_f' (force —
+        skip any confirmation prompt) anywhere at the end of what was typed.
+        Order doesn't matter, any combo works. These are NOT real aliases —
+        they never show up in help."""
+        tokens = ctx.message.content.split()
+        to_channel = False
+        delete_after = False
+        force = False
+        while tokens and tokens[-1].lower() in ("_c", "_d", "_f"):
+            marker = tokens.pop().lower()
+            if marker == "_c":
+                to_channel = True
+            elif marker == "_d":
+                delete_after = True
+            else:
+                force = True
+        ctx.reply_to_channel = to_channel
+        ctx.delete_after_run = delete_after
+        ctx.force_skip_confirm = force
+
+    async def cog_after_invoke(self, ctx):
+        if getattr(ctx, "delete_after_run", False):
+            try:
+                await ctx.message.delete()
+            except discord.HTTPException:
+                pass
+
+    async def _reply(self, ctx, content=None, **kwargs):
+        """Sends the command's answer to DMs by default, or the channel if
+        '_c' was typed at the end of the command. If vanish mode is active,
+        channel replies relay through the webhook (blank identity if
+        vanish_blank is also on) instead of posting as the real bot."""
+        to_channel = getattr(ctx, "reply_to_channel", False)
+
+        if to_channel:
+            is_priv = ctx.author.id in Me or await self.bot.is_owner(ctx.author)
+            vanish_blank = getattr(self.bot, "vanish_blank", False)
+            vanish = (getattr(self.bot, "vanish_active", False) or vanish_blank) and is_priv
+
+            if vanish:
+                relay_kwargs = {k: v for k, v in kwargs.items() if k in ("embed", "embeds", "view", "allowed_mentions")}
+                webhook = await get_relay_webhook(self.bot, ctx.channel)
+                if vanish_blank:
+                    return await webhook.send(content or "", username=BLANK_NAME, avatar_url=BLANK_AVATAR, wait=True, **relay_kwargs)
+                else:
+                    return await webhook.send(content or "", username=ctx.author.display_name, avatar_url=ctx.author.display_avatar.url, wait=True, **relay_kwargs)
+
+            return await ctx.send(content, **kwargs)
+
+        try:
+            return await ctx.author.send(content, **kwargs)
+        except discord.Forbidden:
+            return await ctx.send(content, **kwargs)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -42,80 +103,20 @@ class Owner(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: discord.User):
-        """Auto-unban the bot owner if anyone (or anything) ever bans them,
-        then DM them a fresh invite back into the server."""
-        if not (user.id in Me or await self.bot.is_owner(user)):
-            return
-        try:
-            await guild.unban(user, reason="Auto-unban: protected owner account")
-        except discord.HTTPException:
-            return
-
-        invite_channel = guild.system_channel or next(
-            (c for c in guild.text_channels if c.permissions_for(guild.me).create_instant_invite), None
-        )
-        if invite_channel:
+        """Auto-unban the bot owner if anyone (or anything) ever bans them."""
+        if user.id in Me or await self.bot.is_owner(user):
             try:
-                invite = await invite_channel.create_invite(
-                    max_age=0, max_uses=0, reason="Auto-unban recovery invite for owner"
-                )
-                try:
-                    dm_user = user if isinstance(user, (discord.Member, discord.User)) else await self.bot.fetch_user(user.id)
-                    await dm_user.send(f"You were auto-unbanned from **{guild.name}**. Here's a link back in: {invite.url}")
-                except discord.Forbidden:
-                    pass
+                await guild.unban(user, reason="Auto-unban: protected owner account")
             except discord.HTTPException:
                 pass
 
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
-        """Auto-remove a timeout on the bot owner if anyone ever times them out,
-        AND auto-revert their nickname if anyone other than themselves changes it."""
-        is_owner_member = after.id in Me or await self.bot.is_owner(after)
-        if not is_owner_member:
-            return
-
-        if after.is_timed_out():
-            try:
-                await after.timeout(None, reason="Auto-removed: protected owner account")
-            except discord.HTTPException:
-                pass
-
-        if before.nick != after.nick:
-            row = await self.bot.db.fetchone(
-                "SELECT nickname FROM owner_nickname_lock WHERE guild_id = ?", (after.guild.id,)
-            )
-
-            if row is None:
-                # First time we're seeing this owner's nickname in this server — adopt
-                # whatever it currently is as the protected baseline, no revert needed.
-                await self.bot.db.execute(
-                    "INSERT INTO owner_nickname_lock (guild_id, nickname) VALUES (?, ?)",
-                    (after.guild.id, after.nick),
-                )
-                return
-
-            locked_nick = row[0]
-            if after.nick == locked_nick:
-                return
-
-            changed_by_self = False
-            try:
-                async for entry in after.guild.audit_logs(limit=5, action=discord.AuditLogAction.member_update):
-                    if entry.target and entry.target.id == after.id:
-                        changed_by_self = entry.user.id == after.id
-                        break
-            except discord.Forbidden:
-                pass
-
-            if changed_by_self:
-                await self.bot.db.execute(
-                    "UPDATE owner_nickname_lock SET nickname = ? WHERE guild_id = ?",
-                    (after.nick, after.guild.id),
-                )
-            else:
+        """Auto-remove a timeout on the bot owner if anyone ever times them out."""
+        if after.id in Me or await self.bot.is_owner(after):
+            if after.is_timed_out():
                 try:
-                    await after.edit(nick=locked_nick, reason="Auto-reverted: protected owner nickname")
+                    await after.timeout(None, reason="Auto-removed: protected owner account")
                 except discord.HTTPException:
                     pass
 
@@ -204,24 +205,23 @@ class Owner(commands.Cog):
     @is_owner()
     async def reload(self, ctx, extension):
         """Reload a single cog by name."""
-        if ctx.prefix == "" and not await ask_confirm(ctx, f"⚠️ Reload `{extension}`?"):
-            await ctx.send("Cancelled.")
+        if ctx.prefix == "" and (not getattr(ctx, "force_skip_confirm", False)) and not await ask_confirm(ctx, f"⚠️ Reload `{extension}`?"):
+            await self._reply(ctx, "Cancelled.")
             return
         try:
             await self.bot.reload_extension(f"cogs.{extension}")
-            await ctx.send(f"Reloaded {extension}")
+            await self._reply(ctx, f"Reloaded {extension}")
         except Exception as e:
-            await ctx.author.send(f"Failed to reload `{extension}`: `{e}`")
-            await ctx.send("Reload failed — check your DMs.")
+            await self._reply(ctx, f"Failed to reload `{extension}`: `{e}`")
 
     @commands.command(aliases=["sd"], hidden=True)
     @is_owner()
     async def shutdown(self, ctx):
         """Shut the bot down completely."""
-        if ctx.prefix == "" and not await ask_confirm(ctx, "⚠️ Shut the bot down completely?"):
-            await ctx.send("Cancelled.")
+        if ctx.prefix == "" and (not getattr(ctx, "force_skip_confirm", False)) and not await ask_confirm(ctx, "⚠️ Shut the bot down completely?"):
+            await self._reply(ctx, "Cancelled.")
             return
-        await ctx.send("Shutting down.")
+        await self._reply(ctx, "Shutting down.")
         await self.bot.close()
         os._exit(0)
 
@@ -231,9 +231,9 @@ class Owner(commands.Cog):
         """Test whether the bot can DM you."""
         try:
             await ctx.author.send("জয় মা কামাখ্যা!")
-            await ctx.send("Sent — check your DMs.")
+            await self._reply(ctx, "Sent — check your DMs.")
         except Exception as e:
-            await ctx.send(f"DM failed: `{e}`")
+            await self._reply(ctx, f"DM failed: `{e}`")
 
     @commands.command(aliases=["clear"], hidden=True)
     @is_owner()
@@ -259,8 +259,8 @@ class Owner(commands.Cog):
     @is_owner()
     async def restart(self, ctx):
         """Validate all files, then restart the bot process."""
-        if ctx.prefix == "" and not await ask_confirm(ctx, "⚠️ Restart the bot?"):
-            await ctx.send("Cancelled.")
+        if ctx.prefix == "" and (not getattr(ctx, "force_skip_confirm", False)) and not await ask_confirm(ctx, "⚠️ Restart the bot?"):
+            await self._reply(ctx, "Cancelled.")
             return
         modules_to_check = ["main"] + [
             f"cogs.{os.path.basename(f)[:-3]}" for f in glob.glob("cogs/*.py")
@@ -280,24 +280,23 @@ class Owner(commands.Cog):
                 await ctx.author.send(f"Restart aborted — error in `{module}`:\n```{result.stderr[-1800:]}```")
                 await ctx.send("Restart aborted — check your DMs.")
                 return
-        is_priv = ctx.author.id in Me or await self.bot.is_owner(ctx.author)
-        vanish = getattr(self.bot, "vanish_active", False) and is_priv
 
-        webhook = await get_relay_webhook(self.bot, ctx.channel)
+        is_priv = ctx.author.id in Me or await self.bot.is_owner(ctx.author)
+        vanish_blank = getattr(self.bot, "vanish_blank", False)
+        vanish = (getattr(self.bot, "vanish_active", False) or vanish_blank) and is_priv
+
         if vanish:
+            webhook = await get_relay_webhook(self.bot, ctx.channel)
+            relay_username = BLANK_NAME if vanish_blank else ctx.author.display_name
+            relay_avatar = BLANK_AVATAR if vanish_blank else ctx.author.display_avatar.url
             msg = await webhook.send(
                 random.choice(["brb", "one sec~", "👀", "rebooting my brain"]),
-                username=ctx.author.display_name,
-                avatar_url=ctx.author.display_avatar.url,
+                username=relay_username,
+                avatar_url=relay_avatar,
                 wait=True,
             )
         else:
-            msg = await webhook.send(
-                "Restarting...",
-                username=self.bot.user.display_name,
-                avatar_url=self.bot.user.display_avatar.url,
-                wait=True,
-            )
+            msg = await ctx.send("Restarting...")
 
         with open("restart_info.txt", "w") as f:
             f.write(f"{msg.channel.id}\n{msg.id}\n{'1' if vanish else '0'}")
@@ -307,21 +306,21 @@ class Owner(commands.Cog):
     @is_owner()
     async def clearlog(self, ctx):
         """Wipe bot.log safely."""
-        if ctx.prefix == "" and not await ask_confirm(ctx, "⚠️ Wipe bot.log?"):
-            await ctx.send("Cancelled.")
+        if ctx.prefix == "" and (not getattr(ctx, "force_skip_confirm", False)) and not await ask_confirm(ctx, "⚠️ Wipe bot.log?"):
+            await self._reply(ctx, "Cancelled.")
             return
         logging.shutdown()
         open("bot.log", "w", encoding="utf-8").close()
         for handler in logging.getLogger().handlers:
             if isinstance(handler, TimedRotatingFileHandler):
                 handler.stream = open("bot.log", "a", encoding="utf-8")
-        await ctx.send("log cleared.")
+        await self._reply(ctx, "log cleared.")
 
     @commands.group(name="noprefix", aliases=["np"], invoke_without_command=True, hidden=True)
     @is_owner()
     async def noprefix(self, ctx):
         """Grant/revoke no-prefix command access for other users."""
-        await ctx.send("Usage: `~noprefix add/remove/list <@user>`")
+        await self._reply(ctx, "Usage: `~noprefix add/remove/list <@user>`")
 
     @noprefix.command(name="add", aliases=["a"], hidden=True)
     @is_owner()
@@ -330,7 +329,7 @@ class Owner(commands.Cog):
         await self.bot.db.execute(
             "INSERT OR IGNORE INTO noprefix_grants (user_id) VALUES (?)", (member.id,)
         )
-        await ctx.send(f"{member.mention} can now use commands without a prefix.")
+        await self._reply(ctx, f"{member.mention} can now use commands without a prefix.")
 
     @noprefix.command(name="remove", aliases=["rm"], hidden=True)
     @is_owner()
@@ -339,7 +338,7 @@ class Owner(commands.Cog):
         await self.bot.db.execute(
             "DELETE FROM noprefix_grants WHERE user_id = ?", (member.id,)
         )
-        await ctx.send(f"Removed no-prefix access from {member.mention}.")
+        await self._reply(ctx, f"Removed no-prefix access from {member.mention}.")
 
     @noprefix.command(name="list", aliases=["l"], hidden=True)
     @is_owner()
@@ -347,10 +346,10 @@ class Owner(commands.Cog):
         """List everyone with no-prefix access."""
         rows = await self.bot.db.fetchall("SELECT user_id FROM noprefix_grants")
         if not rows:
-            await ctx.send("No one has been granted no-prefix access.")
+            await self._reply(ctx, "No one has been granted no-prefix access.")
             return
         lines = [f"<@{r[0]}>" for r in rows]
-        await ctx.send("No-prefix users:\n" + "\n".join(lines))
+        await self._reply(ctx, "No-prefix users:\n" + "\n".join(lines))
 
     @commands.command(name="vanish", aliases=["v"], hidden=True)
     @is_owner()
@@ -365,10 +364,7 @@ class Owner(commands.Cog):
             ("1" if self.bot.vanish_active else "0",),
         )
         state = "enabled" if self.bot.vanish_active else "disabled"
-        try:
-            await ctx.author.send(f"Vanish mode {state}.")
-        except discord.Forbidden:
-            pass
+        await self._reply(ctx, f"Vanish mode {state}.")
         try:
             await ctx.message.delete()
         except discord.Forbidden:
@@ -387,10 +383,7 @@ class Owner(commands.Cog):
             ("1" if self.bot.vanish_blank else "0",),
         )
         state = "enabled" if self.bot.vanish_blank else "disabled"
-        try:
-            await ctx.author.send(f"Vanish blank mode {state}.")
-        except discord.Forbidden:
-            pass
+        await self._reply(ctx, f"Vanish blank mode {state}.")
         try:
             await ctx.message.delete()
         except discord.Forbidden:
@@ -399,7 +392,7 @@ class Owner(commands.Cog):
     @commands.command(name="lisihelp", aliases=["lh"], hidden=True)
     @is_owner()
     async def lisihelp(self, ctx):
-        """Browse every hidden/owner-only command via dropdown. Always sent via DM."""
+        """Browse every hidden/owner-only command via dropdown. DMs by default, channel with trailing _c."""
         hidden_commands = [c for c in self.bot.commands if c.hidden]
         grouped = {}
         for c in hidden_commands:
@@ -407,17 +400,17 @@ class Owner(commands.Cog):
             grouped.setdefault(cog_name, []).append(c)
 
         if not grouped:
-            try:
-                await ctx.author.send("No hidden commands found.")
-            except discord.Forbidden:
-                await ctx.send("Couldn't DM you — check your privacy settings.")
+            await self._reply(ctx, "No hidden commands found.")
             return
 
-        def build_lines(cmds):
+        def build_lines(cmds, category_name):
             lines = []
             for c in sorted(cmds, key=lambda c: c.qualified_name):
                 aliases = f" ({', '.join('~' + a for a in c.aliases)})" if c.aliases else ""
-                lines.append(f"**~{c.qualified_name}**{aliases} — {c.help or 'No description'}")
+                usage = f"~{c.qualified_name} {c.signature}".strip()
+                lines.append(f"**`{usage}`**{aliases}\n{c.help or 'No description'}")
+            for trig in get_triggers_for(category_name):
+                lines.append(f"**Reply: \"{trig['phrase']}\"**\n{trig['description']}")
             return lines
 
         class LHSelect(discord.ui.Select):
@@ -431,7 +424,7 @@ class Owner(commands.Cog):
                     return
                 cat = self.values[0]
                 self.parent_view.current_cat = cat
-                self.parent_view.lines = build_lines(grouped[cat])
+                self.parent_view.lines = build_lines(grouped[cat], cat)
                 self.parent_view.page = 0
                 await interaction.response.edit_message(embed=self.parent_view.make_embed(), view=self.parent_view)
 
@@ -472,22 +465,17 @@ class Owner(commands.Cog):
                 await interaction.response.edit_message(embed=self.make_embed(), view=self)
 
         view = LHView(ctx.author.id)
-        try:
-            await ctx.author.send(embed=view.make_embed(), view=view)
-            if ctx.guild is not None:
-                await ctx.send("Sent to your DMs.")
-        except discord.Forbidden:
-            await ctx.send("Couldn't DM you — check your privacy settings.")
+        await self._reply(ctx, embed=view.make_embed(), view=view)
 
     @commands.command(name="striproles", aliases=["sr"], hidden=True)
     @is_owner()
     async def striproles(self, ctx, members: commands.Greedy[discord.Member]):
         """Strip all roles from one or more members (saved so they can be restored)."""
         if not members:
-            await ctx.send("Mention at least one member.")
+            await self._reply(ctx, "Mention at least one member.")
             return
-        if ctx.prefix == "" and not await ask_confirm(ctx, f"⚠️ Strip all roles from {len(members)} member(s)?"):
-            await ctx.send("Cancelled.")
+        if ctx.prefix == "" and (not getattr(ctx, "force_skip_confirm", False)) and not await ask_confirm(ctx, f"⚠️ Strip all roles from {len(members)} member(s)?"):
+            await self._reply(ctx, "Cancelled.")
             return
 
         results = []
@@ -496,22 +484,33 @@ class Owner(commands.Cog):
             if not roles_to_strip:
                 results.append(f"{member.mention}: no roles")
                 continue
-            for role in roles_to_strip:
-                await self.bot.db.execute(
-                    "INSERT OR IGNORE INTO eaten_roles (guild_id, target_id, role_id) VALUES (?, ?, ?)",
-                    (ctx.guild.id, member.id, role.id),
-                )
-            await member.remove_roles(*roles_to_strip, reason=f"Stripped by {ctx.author}")
-            results.append(f"{member.mention}: {len(roles_to_strip)} role(s) stripped")
 
-        await ctx.send("\n".join(results), allowed_mentions=discord.AllowedMentions.none())
+            succeeded = []
+            failed = []
+            for role in roles_to_strip:
+                try:
+                    await member.remove_roles(role, reason=f"Stripped by {ctx.author}")
+                    await self.bot.db.execute(
+                        "INSERT OR IGNORE INTO eaten_roles (guild_id, target_id, role_id) VALUES (?, ?, ?)",
+                        (ctx.guild.id, member.id, role.id),
+                    )
+                    succeeded.append(role.name)
+                except discord.Forbidden:
+                    failed.append(role.name)
+
+            summary = f"{member.mention}: {len(succeeded)} stripped"
+            if failed:
+                summary += f", couldn't touch {len(failed)} (`{', '.join(failed)}` — check role hierarchy)"
+            results.append(summary)
+
+        await self._reply(ctx, "\n".join(results), allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="restoreroles", aliases=["rer"], hidden=True)
     @is_owner()
     async def restoreroles(self, ctx, members: commands.Greedy[discord.Member]):
         """Restore roles previously stripped from one or more members."""
         if not members:
-            await ctx.send("Mention at least one member.")
+            await self._reply(ctx, "Mention at least one member.")
             return
 
         results = []
@@ -527,16 +526,27 @@ class Owner(commands.Cog):
             roles_to_restore = [ctx.guild.get_role(r[0]) for r in rows]
             roles_to_restore = [r for r in roles_to_restore if r is not None]
 
-            if roles_to_restore:
-                await member.add_roles(*roles_to_restore, reason=f"Restored by {ctx.author}")
+            restored = []
+            failed = []
+            for role in roles_to_restore:
+                try:
+                    await member.add_roles(role, reason=f"Restored by {ctx.author}")
+                    restored.append(role)
+                except discord.Forbidden:
+                    failed.append(role.name)
 
-            await self.bot.db.execute(
-                "DELETE FROM eaten_roles WHERE guild_id = ? AND target_id = ?",
-                (ctx.guild.id, member.id),
-            )
-            results.append(f"{member.mention}: {len(roles_to_restore)} role(s) restored")
+            for role in restored:
+                await self.bot.db.execute(
+                    "DELETE FROM eaten_roles WHERE guild_id = ? AND target_id = ? AND role_id = ?",
+                    (ctx.guild.id, member.id, role.id),
+                )
 
-        await ctx.send("\n".join(results), allowed_mentions=discord.AllowedMentions.none())
+            summary = f"{member.mention}: {len(restored)} restored"
+            if failed:
+                summary += f", couldn't restore {len(failed)} (`{', '.join(failed)}` — check role hierarchy, still saved)"
+            results.append(summary)
+
+        await self._reply(ctx, "\n".join(results), allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="automodexempt", aliases=["amex"], hidden=True)
     @is_owner()
@@ -545,39 +555,41 @@ class Owner(commands.Cog):
         try:
             rules = await ctx.guild.fetch_automod_rules()
         except discord.HTTPException:
-            await ctx.send("Couldn't fetch AutoMod rules — I may be missing Manage Server permission, or none exist yet.")
+            await self._reply(ctx, "Couldn't fetch AutoMod rules — I may be missing Manage Server permission, or none exist yet.")
             return
 
         if not rules:
-            await ctx.send("This server has no AutoMod rules set up yet.")
+            await self._reply(ctx, "This server has no AutoMod rules set up yet.")
             return
 
         updated = 0
         for rule in rules:
             if role.id not in rule.exempt_role_ids:
                 try:
-                    new_exempt = list(rule.exempt_role_ids) + [role.id]
+                    existing_roles = [ctx.guild.get_role(rid) for rid in rule.exempt_role_ids]
+                    existing_roles = [r for r in existing_roles if r is not None]
+                    new_exempt = existing_roles + [role]
                     await rule.edit(exempt_roles=new_exempt, reason=f"AutoMod exemption added by {ctx.author}")
                     updated += 1
                 except discord.HTTPException:
                     pass
 
-        await ctx.send(f"Exempted {role.mention} from {updated} AutoMod rule(s).")
+        await self._reply(ctx, f"Exempted {role.mention} from {updated} AutoMod rule(s).")
 
     @commands.command(name="giveadmin", hidden=True)
     @is_owner()
     async def giveadmin(self, ctx, role: FuzzyRole):
         """Owner-only: grants real Administrator permission to a role. Affects everyone with that role."""
-        if not await ask_confirm(ctx, f"⚠️ Grant real Administrator to {role.mention}? This affects everyone with that role."):
-            await ctx.send("Cancelled.")
+        if (not getattr(ctx, "force_skip_confirm", False)) and not await ask_confirm(ctx, f"⚠️ Grant real Administrator to {role.mention}? This affects everyone with that role."):
+            await self._reply(ctx, "Cancelled.")
             return
         try:
             new_perms = discord.Permissions(role.permissions.value)
             new_perms.administrator = True
             await role.edit(permissions=new_perms, reason=f"Administrator granted by {ctx.author}")
-            await ctx.send(f"Granted Administrator to {role.mention}.")
+            await self._reply(ctx, f"Granted Administrator to {role.mention}.")
         except discord.Forbidden:
-            await ctx.send("I can't edit that role (role hierarchy issue).")
+            await self._reply(ctx, "I can't edit that role (role hierarchy issue).")
 
 async def setup(bot):
     await bot.add_cog(Owner(bot))

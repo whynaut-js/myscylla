@@ -164,13 +164,6 @@ class Database:
             )
         """)
 
-        await self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS owner_nickname_lock (
-                guild_id INTEGER PRIMARY KEY,
-                nickname TEXT
-            )
-        """)
-
         await self.conn.commit()
 
     async def execute(self, query, params=()):
