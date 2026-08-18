@@ -39,6 +39,12 @@ class Mutes(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_load(self):
+        # Runs once when the cog loads (at every startup/restart) — so the
+        # mute-role DB columns exist BEFORE anyone ever runs ~mute, instead
+        # of only getting created the first time ~mutesetup happens to run.
+        await self._ensure_columns()
+
     async def _ensure_columns(self):
         for info in MUTE_TYPES.values():
             try:

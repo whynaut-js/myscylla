@@ -173,11 +173,22 @@ class Roles(commands.Cog):
             await ctx.send("Mention at least one member.")
             return
 
+        succeeded = []
+        failed = []
         for member in members:
-            await member.add_roles(*roles, reason=f"Added by {ctx.author}")
+            try:
+                await member.add_roles(*roles, reason=f"Added by {ctx.author}")
+                succeeded.append(member)
+            except discord.Forbidden:
+                failed.append(member)
+
         role_names = ", ".join(r.mention for r in roles)
-        member_names = ", ".join(m.mention for m in members)
-        await ctx.send(f"Added {role_names} to: {member_names}", allowed_mentions=discord.AllowedMentions.none())
+        reply = []
+        if succeeded:
+            reply.append(f"Added {role_names} to: {', '.join(m.mention for m in succeeded)}")
+        if failed:
+            reply.append(f"⚠️ Couldn't add to: {', '.join(m.mention for m in failed)} — check role hierarchy (bot's role must be above these roles).")
+        await ctx.send("\n".join(reply), allowed_mentions=discord.AllowedMentions.none())
 
     @roles.command(name="remove", aliases=["rr"])
     async def roles_remove(self, ctx, *, arg: str):
@@ -219,11 +230,22 @@ class Roles(commands.Cog):
             await ctx.send("Mention at least one member.")
             return
 
+        succeeded = []
+        failed = []
         for member in members:
-            await member.remove_roles(*roles, reason=f"Removed by {ctx.author}")
+            try:
+                await member.remove_roles(*roles, reason=f"Removed by {ctx.author}")
+                succeeded.append(member)
+            except discord.Forbidden:
+                failed.append(member)
+
         role_names = ", ".join(r.mention for r in roles)
-        member_names = ", ".join(m.mention for m in members)
-        await ctx.send(f"Removed {role_names} from: {member_names}", allowed_mentions=discord.AllowedMentions.none())
+        reply = []
+        if succeeded:
+            reply.append(f"Removed {role_names} from: {', '.join(m.mention for m in succeeded)}")
+        if failed:
+            reply.append(f"⚠️ Couldn't remove from: {', '.join(m.mention for m in failed)} — check role hierarchy.")
+        await ctx.send("\n".join(reply), allowed_mentions=discord.AllowedMentions.none())
 
     @roles.command(name="all", aliases=["rall"])
     async def roles_all(self, ctx, role: FuzzyRole):

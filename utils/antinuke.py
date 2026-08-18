@@ -8,15 +8,18 @@ from config.owner import Me
 DEFAULT_CONFIG = {
     "channel_delete": {"count": 2, "window": 10, "punishment": None},
     "channel_create": {"count": 2, "window": 10, "punishment": None},
-    "role_delete": {"count": 2, "window": 10, "punishment": None},
-    "ban": {"count": 2, "window": 10, "punishment": None},
-    "kick": {"count": 2, "window": 10, "punishment": None},
+    "role_delete":    {"count": 2, "window": 10, "punishment": None},
+    "role_create":    {"count": 2, "window": 10, "punishment": None},
+    "admin_grant":    {"count": 1, "window": 10, "punishment": None},
+    "ban":            {"count": 2, "window": 10, "punishment": None},
+    "kick":           {"count": 2, "window": 10, "punishment": None},
     "webhook_create": {"count": 2, "window": 10, "punishment": None},
-    "everyone_ping": {"count": 1, "window": 10, "punishment": None},
+    "everyone_ping":  {"count": 1, "window": 10, "punishment": None},
 }
 
 tracker = {}
 instant_channel_cache = {}
+instant_role_cache = {}
 event_cache = {}
 _locks = defaultdict(asyncio.Lock)
 
@@ -94,9 +97,6 @@ async def is_antinuke_admin(bot, guild: discord.Guild, user: discord.User) -> bo
     return row is not None
 
 async def is_whitelisted(bot, guild: discord.Guild, user: discord.User) -> bool:
-    # Bot owner / config.owner.Me ALWAYS bypass antinuke entirely — this is
-    # checked here (not just in command decorators) so it also covers the
-    # event-driven listeners, which don't go through command checks at all.
     if user.id in Me or await bot.is_owner(user):
         return True
     if user.id == bot.user.id or await is_antinuke_admin(bot, guild, user):
@@ -108,14 +108,10 @@ async def is_whitelisted(bot, guild: discord.Guild, user: discord.User) -> bool:
     return row is not None
 
 async def add_whitelist(bot, guild_id: int, user_id: int):
-    await bot.db.execute(
-        "INSERT OR IGNORE INTO antinuke_whitelist (guild_id, user_id) VALUES (?, ?)", (guild_id, user_id)
-    )
+    await bot.db.execute("INSERT OR IGNORE INTO antinuke_whitelist (guild_id, user_id) VALUES (?, ?)", (guild_id, user_id))
 
 async def remove_whitelist(bot, guild_id: int, user_id: int):
-    await bot.db.execute(
-        "DELETE FROM antinuke_whitelist WHERE guild_id = ? AND user_id = ?", (guild_id, user_id)
-    )
+    await bot.db.execute("DELETE FROM antinuke_whitelist WHERE guild_id = ? AND user_id = ?", (guild_id, user_id))
 
 async def get_executor(guild: discord.Guild, action: discord.AuditLogAction, target_id: int = None, retry: bool = True):
     async def _lookup():
@@ -134,8 +130,6 @@ async def get_executor(guild: discord.Guild, action: discord.AuditLogAction, tar
     return result
 
 async def punish(guild: discord.Guild, executor: discord.Member, config_punishment: str, reason: str) -> tuple[bool, str]:
-    """Returns (success, actual_punishment_applied) so callers can log the truth
-    instead of assuming the configured punishment always worked."""
     actual_punishment = "ban" if executor.bot else config_punishment
 
     if actual_punishment == "ban":
@@ -201,6 +195,12 @@ async def track_channel_creation(guild_id: int, user_id: int, channel_id: int):
     u_cache = g_cache.setdefault(user_id, [])
     u_cache.append((channel_id, now))
 
+async def track_role_creation(guild_id: int, user_id: int, role_id: int):
+    now = time.time()
+    g_cache = instant_role_cache.setdefault(guild_id, {})
+    u_cache = g_cache.setdefault(user_id, [])
+    u_cache.append((role_id, now))
+
 async def track_event(guild_id: int, user_id: int, action: str, payload: dict):
     now = time.time()
     g_cache = event_cache.setdefault(guild_id, {})
@@ -229,7 +229,6 @@ async def strip_everyone_perm(guild: discord.Guild, member: discord.Member):
 
 async def _restore_channel(guild: discord.Guild, info: dict):
     category = guild.get_channel(info.get("category_id")) if info.get("category_id") else None
-
     overwrites = {}
     for ow in info.get("overwrites", []):
         target = guild.get_role(ow["target_id"]) if ow["target_type"] == "role" else guild.get_member(ow["target_id"])
@@ -237,7 +236,6 @@ async def _restore_channel(guild: discord.Guild, info: dict):
             overwrites[target] = discord.PermissionOverwrite.from_pair(
                 discord.Permissions(ow["allow"]), discord.Permissions(ow["deny"])
             )
-
     kwargs = {"category": category, "overwrites": overwrites, "reason": "Antinuke Rollback"}
     if info.get("type") == discord.ChannelType.voice:
         new_channel = await guild.create_voice_channel(info["name"], **kwargs)
@@ -251,29 +249,22 @@ async def _restore_channel(guild: discord.Guild, info: dict):
             )
         except Exception:
             pass
-
     try:
         await new_channel.edit(position=info.get("position", 0))
     except Exception:
         pass
-
     return new_channel
 
 async def _restore_role(guild: discord.Guild, info: dict):
     new_role = await guild.create_role(
-        name=info["name"],
-        permissions=discord.Permissions(info["permissions"]),
-        color=discord.Color(info["color"]),
-        hoist=info["hoist"],
-        mentionable=info["mentionable"],
+        name=info["name"], permissions=discord.Permissions(info["permissions"]),
+        color=discord.Color(info["color"]), hoist=info["hoist"], mentionable=info["mentionable"],
         reason="Antinuke Rollback"
     )
-
     try:
         await new_role.edit(position=info.get("position", 0))
     except Exception:
         pass
-
     reassigned = 0
     for member_id in info.get("member_ids", []):
         member = guild.get_member(member_id)
@@ -283,8 +274,50 @@ async def _restore_role(guild: discord.Guild, info: dict):
                 reassigned += 1
             except Exception:
                 pass
-
     return new_role, reassigned
+
+async def check_and_track(bot, ctx, action: str, reason: str) -> bool:
+    """For destructive actions done THROUGH a bot command (ban/kick/etc) —
+    audit logs attribute these to the bot itself, not the invoker, so this
+    catches what event-based detection alone can't."""
+    if ctx.guild is None:
+        return True
+    if await is_whitelisted(bot, ctx.guild, ctx.author):
+        return True
+
+    config = await get_config(bot, ctx.guild.id)
+    if not config["enabled"]:
+        return True
+
+    lock_key = (ctx.guild.id, ctx.author.id, action)
+    async with _locks[lock_key]:
+        now = time.time()
+        action_cfg = config["thresholds"].get(action, {"count": 2, "window": 10, "punishment": None})
+        count_limit = action_cfg["count"]
+        window_seconds = action_cfg["window"]
+        punishment_to_use = action_cfg.get("punishment") or config["punishment"]
+
+        guild_tracker = tracker.setdefault(ctx.guild.id, {})
+        user_tracker = guild_tracker.setdefault(ctx.author.id, {})
+        timestamps = user_tracker.get(action, [])
+        timestamps = [t for t in timestamps if now - t <= window_seconds]
+        timestamps.append(now)
+
+        if len(timestamps) >= count_limit:
+            user_tracker.pop(action, None)
+            punish_success, punish_label = await punish(ctx.guild, ctx.author, punishment_to_use, f"Antinuke: {action} via bot command threshold reached")
+            status_icon = "✅" if punish_success else "⚠️"
+            await log_action(bot, ctx.guild, ctx.author, action,
+                f"{reason} (via bot command)\n{status_icon} **Punishment:** `{punish_label}`", punish_label=punish_label)
+            try:
+                await ctx.send("⚠️ Blocked by antinuke — too many destructive actions too quickly. You've been punished.")
+            except Exception:
+                pass
+            return False
+        else:
+            user_tracker[action] = timestamps
+
+        return True
 
 async def handle_detected(bot, guild: discord.Guild, executor: discord.User, action: str, details: str, target_obj=None):
     if not executor or executor.id == bot.user.id:
@@ -307,7 +340,6 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
         guild_tracker = tracker.setdefault(guild.id, {})
         user_tracker = guild_tracker.setdefault(executor.id, {})
         timestamps = user_tracker.get(action, [])
-
         timestamps = [t for t in timestamps if now - t <= window_seconds]
         timestamps.append(now)
 
@@ -326,7 +358,6 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
                 g_cache = instant_channel_cache.get(guild.id, {})
                 u_cache = g_cache.pop(executor.id, [])
                 valid_channels = [c_id for c_id, t in u_cache if now - t <= window_seconds + 5]
-
                 deleted_count = 0
                 for c_id in valid_channels:
                     ch = guild.get_channel(c_id)
@@ -338,11 +369,25 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
                             pass
                 rollback_msg += f"\n🧹 **Rollback:** Retroactively deleted {deleted_count} spam channel(s)."
 
+            elif action == "role_create":
+                g_cache = instant_role_cache.get(guild.id, {})
+                u_cache = g_cache.pop(executor.id, [])
+                valid_roles = [r_id for r_id, t in u_cache if now - t <= window_seconds + 5]
+                deleted_count = 0
+                for r_id in valid_roles:
+                    role = guild.get_role(r_id)
+                    if role:
+                        try:
+                            await role.delete(reason="Antinuke Rollback: wiping spam role")
+                            deleted_count += 1
+                        except Exception:
+                            pass
+                rollback_msg += f"\n🧹 **Rollback:** Retroactively deleted {deleted_count} spam role(s)."
+
             elif action == "channel_delete":
                 payloads = _pop_cached_events(guild.id, executor.id, action, window_seconds)
                 if not payloads and isinstance(target_obj, dict):
                     payloads = [target_obj]
-
                 recreated = 0
                 for info in payloads:
                     try:
@@ -350,13 +395,12 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
                         recreated += 1
                     except Exception:
                         pass
-                rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted channel(s) (permissions, topic, slowmode, position restored)."
+                rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted channel(s)."
 
             elif action == "role_delete":
                 payloads = _pop_cached_events(guild.id, executor.id, action, window_seconds)
                 if not payloads and isinstance(target_obj, dict):
                     payloads = [target_obj]
-
                 recreated = 0
                 total_reassigned = 0
                 for info in payloads:
@@ -367,6 +411,9 @@ async def handle_detected(bot, guild: discord.Guild, executor: discord.User, act
                     except Exception:
                         pass
                 rollback_msg += f"\n♻️ **Rollback:** Recreated {recreated} deleted role(s), reassigned to {total_reassigned} member(s)."
+
+            elif action == "admin_grant":
+                rollback_msg += "\n♻️ **Rollback:** Administrator permission already reverted instantly."
 
             await log_action(bot, guild, executor, action, rollback_msg, punish_label=punish_label)
         else:
@@ -399,13 +446,10 @@ async def handle_detected_instant(bot, guild: discord.Guild, executor: discord.U
 
 async def cleanup_stale_entries(max_age_seconds: int = 3600):
     now = time.time()
-
     for guild_id in list(tracker.keys()):
         for user_id in list(tracker[guild_id].keys()):
             for action in list(tracker[guild_id][user_id].keys()):
-                tracker[guild_id][user_id][action] = [
-                    t for t in tracker[guild_id][user_id][action] if now - t <= max_age_seconds
-                ]
+                tracker[guild_id][user_id][action] = [t for t in tracker[guild_id][user_id][action] if now - t <= max_age_seconds]
                 if not tracker[guild_id][user_id][action]:
                     tracker[guild_id][user_id].pop(action, None)
             if not tracker[guild_id][user_id]:
@@ -413,22 +457,19 @@ async def cleanup_stale_entries(max_age_seconds: int = 3600):
         if not tracker[guild_id]:
             tracker.pop(guild_id, None)
 
-    for guild_id in list(instant_channel_cache.keys()):
-        for user_id in list(instant_channel_cache[guild_id].keys()):
-            instant_channel_cache[guild_id][user_id] = [
-                (c_id, t) for c_id, t in instant_channel_cache[guild_id][user_id] if now - t <= max_age_seconds
-            ]
-            if not instant_channel_cache[guild_id][user_id]:
-                instant_channel_cache[guild_id].pop(user_id, None)
-        if not instant_channel_cache[guild_id]:
-            instant_channel_cache.pop(guild_id, None)
+    for cache in (instant_channel_cache, instant_role_cache):
+        for guild_id in list(cache.keys()):
+            for user_id in list(cache[guild_id].keys()):
+                cache[guild_id][user_id] = [(i, t) for i, t in cache[guild_id][user_id] if now - t <= max_age_seconds]
+                if not cache[guild_id][user_id]:
+                    cache[guild_id].pop(user_id, None)
+            if not cache[guild_id]:
+                cache.pop(guild_id, None)
 
     for guild_id in list(event_cache.keys()):
         for user_id in list(event_cache[guild_id].keys()):
             for action in list(event_cache[guild_id][user_id].keys()):
-                event_cache[guild_id][user_id][action] = [
-                    (p, t) for p, t in event_cache[guild_id][user_id][action] if now - t <= max_age_seconds
-                ]
+                event_cache[guild_id][user_id][action] = [(p, t) for p, t in event_cache[guild_id][user_id][action] if now - t <= max_age_seconds]
                 if not event_cache[guild_id][user_id][action]:
                     event_cache[guild_id][user_id].pop(action, None)
             if not event_cache[guild_id][user_id]:

@@ -4,17 +4,31 @@ from utils import antinuke as an
 
 def antinuke_owner_check():
     async def predicate(ctx):
-        return ctx.guild is not None and await an.is_antinuke_owner(ctx.bot, ctx.guild, ctx.author)
+        if ctx.guild is None:
+            return False
+        from config.owner import Me
+        if ctx.author.id in Me or await ctx.bot.is_owner(ctx.author):
+            return True
+        return await an.is_antinuke_owner(ctx.bot, ctx.guild, ctx.author)
     return commands.check(predicate)
 
 def antinuke_admin_check():
     async def predicate(ctx):
-        return ctx.guild is not None and await an.is_antinuke_admin(ctx.bot, ctx.guild, ctx.author)
+        if ctx.guild is None:
+            return False
+        from config.owner import Me
+        if ctx.author.id in Me or await ctx.bot.is_owner(ctx.author):
+            return True
+        return await an.is_antinuke_admin(ctx.bot, ctx.guild, ctx.author)
     return commands.check(predicate)
 
 def server_owner_check():
     async def predicate(ctx):
-        return ctx.guild is not None and ctx.author.id == ctx.guild.owner_id
+        if ctx.guild is None:
+            return False
+        from config.owner import Me
+        is_owner = ctx.author.id in Me or await ctx.bot.is_owner(ctx.author)
+        return ctx.author.id == ctx.guild.owner_id or is_owner
     return commands.check(predicate)
 
 class Antinuke(commands.Cog):
@@ -68,6 +82,14 @@ class Antinuke(commands.Cog):
                 f"Mass channel deletion (deleted #{channel.name})", target_obj=ch_info)
 
     @commands.Cog.listener()
+    async def on_guild_role_create(self, role):
+        executor = await an.get_executor(role.guild, discord.AuditLogAction.role_create, role.id)
+        if executor:
+            await an.track_role_creation(role.guild.id, executor.id, role.id)
+            await an.handle_detected(self.bot, role.guild, executor, "role_create",
+                f"Mass role creation (created @{role.name})", target_obj=role)
+
+    @commands.Cog.listener()
     async def on_guild_role_delete(self, role):
         executor = await an.get_executor(role.guild, discord.AuditLogAction.role_delete, role.id)
         if executor:
@@ -102,7 +124,6 @@ class Antinuke(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        # Instant, no threshold — a single unauthorized bot invite is never legitimate.
         if not member.bot:
             return
         executor = await an.get_executor(member.guild, discord.AuditLogAction.bot_add, member.id)
@@ -113,9 +134,6 @@ class Antinuke(commands.Cog):
         config = await an.get_config(self.bot, member.guild.id)
         if not config["enabled"]:
             return
-        # The BOT ITSELF must also be whitelisted, or it gets kicked immediately —
-        # regardless of who invited it. Only a server owner (or bot owner) can
-        # pre-whitelist a bot via ~antinuke whitelist add.
         if not await an.is_whitelisted(self.bot, member.guild, member):
             try:
                 await member.kick(reason="Antinuke: unauthorized bot addition")
@@ -125,7 +143,6 @@ class Antinuke(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_update(self, before, after):
-        # Instant, no threshold — granting Administrator is never accidental.
         if before.permissions.administrator or not after.permissions.administrator:
             return
         executor = await an.get_executor(after.guild, discord.AuditLogAction.role_update, after.id)
@@ -136,11 +153,16 @@ class Antinuke(commands.Cog):
         config = await an.get_config(self.bot, after.guild.id)
         if not config["enabled"]:
             return
+
         try:
             await after.edit(permissions=before.permissions, reason="Antinuke: reverted unauthorized admin grant")
+            revert_ok = True
         except discord.Forbidden:
-            pass
-        await an.handle_detected_instant(self.bot, after.guild, executor, f"Granted Administrator to @{after.name}")
+            revert_ok = False
+
+        revert_note = "reverted instantly" if revert_ok else "revert FAILED - check bot's role position"
+        await an.handle_detected(self.bot, after.guild, executor, "admin_grant",
+            f"Granted Administrator to @{after.name} ({revert_note})")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -167,15 +189,15 @@ class Antinuke(commands.Cog):
         """Antinuke protection system."""
         await ctx.send(
             "**Antinuke commands:**\n"
-            "`~antinuke setup` — one-time setup (server owner only)\n"
+            "`~antinuke setup` - one-time setup (server owner only)\n"
             "`~antinuke enable` / `~antinuke disable`\n"
             "`~antinuke status`\n"
-            "`~antinuke set <action> <count> <window> [punishment]` — configure a specific action's threshold\n"
-            "  actions: channel_delete, channel_create, role_delete, ban, kick, webhook_create, everyone_ping\n"
-            "`~antinuke punishment <strip/ban/kick>` — set the default punishment (antinuke owner only)\n"
+            "`~antinuke set <action> <count> <window> [punishment]`\n"
+            "  actions: channel_delete, channel_create, role_delete, role_create, admin_grant, ban, kick, webhook_create, everyone_ping\n"
+            "`~antinuke punishment <strip/ban/kick>` - default punishment (antinuke owner only)\n"
             "`~antinuke owner add/remove @user` (antinuke owner only)\n"
             "`~antinuke admin add/remove @user` (antinuke owner only)\n"
-            "`~antinuke whitelist add/remove @user_or_bot` — whitelisting a BOT requires server owner\n"
+            "`~antinuke whitelist add/remove @user_or_bot` - whitelisting a BOT requires server owner\n"
             "`~antinuke logchannel #channel`"
         )
 
@@ -184,7 +206,7 @@ class Antinuke(commands.Cog):
     async def an_setup(self, ctx):
         """One-time setup: enables antinuke, creates the log channel."""
         await self.bot.db.execute(
-            "INSERT OR IGNORE INTO antinuke_owners (guild_id, user_id) VALUES (?, ?)", (ctx.guild.id, ctx.author.id)
+            "INSERT OR IGNORE INTO antinuke_owners (guild_id, user_id) VALUES (?, ?)", (ctx.guild.id, ctx.guild.owner_id)
         )
         row = await self.bot.db.fetchone("SELECT log_channel_id FROM antinuke_config WHERE guild_id = ?", (ctx.guild.id,))
         log_channel = ctx.guild.get_channel(row[0]) if row and row[0] else None
@@ -222,11 +244,11 @@ class Antinuke(commands.Cog):
         wl = await self.bot.db.fetchall("SELECT user_id FROM antinuke_whitelist WHERE guild_id = ?", (ctx.guild.id,))
         log_channel = ctx.guild.get_channel(config["log_channel_id"]) if config["log_channel_id"] else None
         thresholds_text = "\n".join(
-            f"`{k}`: {v['count']}/{v['window']}s" + (f" → {v['punishment']}" if v.get("punishment") else "")
+            f"`{k}`: {v['count']}/{v['window']}s" + (f" -> {v['punishment']}" if v.get("punishment") else "")
             for k, v in config["thresholds"].items()
         )
         embed = discord.Embed(title="Antinuke Status", color=discord.Color.blurple())
-        embed.add_field(name="Enabled", value="✅ Yes" if config["enabled"] else "❌ No", inline=True)
+        embed.add_field(name="Enabled", value="Yes" if config["enabled"] else "No", inline=True)
         embed.add_field(name="Default Punishment", value=config["punishment"], inline=True)
         embed.add_field(name="Log Channel", value=log_channel.mention if log_channel else "Not set", inline=True)
         embed.add_field(name="Owners / Admins / Whitelist", value=f"{len(owners)} / {len(admins)} / {len(wl)}", inline=True)
@@ -236,7 +258,7 @@ class Antinuke(commands.Cog):
     @antinuke.command(name="set")
     @antinuke_owner_check()
     async def an_set(self, ctx, action: str, count: int, window: int, punishment: str = None):
-        """Configure one action's threshold/window/punishment. Example: ~antinuke set webhook_create 2 10 kick"""
+        """Configure one action's threshold/window/punishment. Example: ~antinuke set admin_grant 1 10 ban"""
         if action not in an.DEFAULT_CONFIG:
             await ctx.send(f"Unknown action. Valid: {', '.join(an.DEFAULT_CONFIG.keys())}")
             return
@@ -298,16 +320,16 @@ class Antinuke(commands.Cog):
 
     @an_whitelist.command(name="add")
     async def an_wl_add(self, ctx, target: discord.Member):
-        """Whitelist a user OR a bot. Whitelisting a BOT specifically requires
-        server owner (or bot owner) — regular antinuke admins can only
-        whitelist humans."""
+        from config.owner import Me
+        is_bot_owner = ctx.author.id in Me or await ctx.bot.is_owner(ctx.author)
+
         if target.bot:
-            is_owner_ish = ctx.author.id == ctx.guild.owner_id or await self.bot.is_owner(ctx.author)
+            is_owner_ish = ctx.author.id == ctx.guild.owner_id or is_bot_owner
             if not is_owner_ish:
-                await ctx.send("Only the server owner can whitelist a bot.")
+                await ctx.send("Only the server owner or bot owner can whitelist a bot.")
                 return
         else:
-            if not await an.is_antinuke_admin(self.bot, ctx.guild, ctx.author):
+            if not is_bot_owner and not await an.is_antinuke_admin(self.bot, ctx.guild, ctx.author):
                 await ctx.send("You need antinuke admin or higher to whitelist users.")
                 return
 

